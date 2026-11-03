@@ -35,7 +35,8 @@ def build():
             template.write_text(text, encoding='utf-8', newline='\n')
 
     required = ['scripts/install.sh', 'scripts/rollback.sh', 'README.md', 'LICENSE',
-                'THIRD_PARTY_NOTICES.md', 'docs/INSTALL.md', 'docs/DEVELOPMENT.md']
+                'THIRD_PARTY_NOTICES.md', 'docs/INSTALL.md', 'docs/DEVELOPMENT.md',
+                'docs/VALIDATION.md']
     for name in required:
         if not (ROOT / name).is_file():
             raise SystemExit(f'Missing distribution input: {name}')

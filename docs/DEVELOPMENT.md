@@ -62,7 +62,39 @@ luci-theme-mori-0.1.0/
 
 ## SDK 软件包
 
-仓库包含符合 LuCI 目录布局的 `Makefile`，可放入与目标固件匹配、已准备好 LuCI feed 的 OpenWrt / ImmortalWrt SDK 或源码树中：
+原生发布构建固定使用 ImmortalWrt 25.12.0 的 x86/64 SDK 和该版本公布的 feeds 提交，不跟随 feeds 的浮动分支。
+
+| 输入 | 固定值 |
+| --- | --- |
+| SDK | `immortalwrt-sdk-25.12.0-x86-64_gcc-14.3.0_musl.Linux-x86_64.tar.zst` |
+| SDK SHA-256 | `c228059aa1e58c3b3ae58ce8dcc7549fd08379d8e231daf80fcca15b677564cb` |
+| LuCI feed | `a701807e2e0051f342f9980fd85f90f6966af9b0` |
+| Packages feed | `881bc2200a61801edc8db88e7631f7e6468989a1` |
+
+来源：[官方 SDK 目录与校验值](https://downloads.immortalwrt.org/releases/25.12.0/targets/x86/64/)、[feeds.buildinfo](https://downloads.immortalwrt.org/releases/25.12.0/targets/x86/64/feeds.buildinfo)。
+
+在 Linux x86_64 构建主机上运行：
+
+```sh
+sh scripts/build-sdk.sh
+sudo sh scripts/test-native.sh
+```
+
+所需主机工具与软件包见 [SDK 工作流](../.github/workflows/build-sdk.yml)。也可在 GitHub Actions 手动运行 **Build native SDK package**；成功产物名为 `luci-theme-mori-native-sdk`。
+
+构建脚本先校验 SDK 和 `feeds.buildinfo` 的 SHA-256，再使用锁定提交构建 Mori。`MORI_SDK_JOBS` 可调整并行数，默认 2；`MORI_SDK_WORKDIR` 指定临时工作目录的父目录。脚本只创建和清理自己命名的临时子目录，不删除指定父目录。输出目录 `dist/sdk/` 必须为空，重建前应先将上次产物另行保存。
+
+输出包括：
+
+- `luci-theme-mori-0.1.0-r1.apk` 与 `mori-sdk-signing-public.pem`。
+- `APK-SHA256SUMS`：仅用于用户安装时校验上述两项。
+- `SHA256SUMS`：整个 SDK 产物目录的完整校验清单。
+- `provenance.json`、`feeds.buildinfo`、`feeds.conf` 和 `sdk.config`：固定输入及构建来源。
+- `package-metadata.yaml`、`payload-sha256.txt`、`payload-verification.txt`、`signature-verification.txt`、`hooks/` 和 `native-smoke-test.txt`：成品及测试记录。
+
+SDK 构建使用临时签名私钥，只保留公钥作为验证材料，私钥不进入产物或仓库。因此固定的 SDK、feeds 和源码可用于核对构建输入及安装内容，但不同构建的签名和 APK 文件哈希不承诺逐字节相同。发布时应上传实际完成测试的那个 APK。
+
+仓库同时包含符合 LuCI 目录布局的 `Makefile`，也可放入与目标固件匹配、已准备好 LuCI feed 的 SDK 或源码树中：
 
 ```sh
 git clone https://github.com/AobaRino/luci-theme-mori.git package/luci-theme-mori
@@ -70,11 +102,13 @@ make menuconfig
 make package/luci-theme-mori/compile V=s
 ```
 
-在菜单中选择 `LuCI → Themes → luci-theme-mori`。构建系统根据固件分支生成其原生包格式，产物位于该构建树的 `bin/` 下。
+在菜单中选择 `LuCI → Themes → luci-theme-mori`。当前固定 SDK 生成 `.apk`，包的架构字段为 `noarch`；这是资源包的架构标识，不能据此宣称所有固件和设备已验证。旧版 `.ipk` 构建不在当前发布验证范围内。
 
 主题登记由软件包的安装钩子显式运行 `/usr/libexec/mori-register`。此文件不放入 `uci-defaults`，以免触发软件包框架对其他配置草稿的全局提交；Mori 的安装钩子也不重载 rpcd。若将 Mori 直接编入固件镜像，首次启动后需运行 `sh /usr/libexec/mori-register` 登记主题，再到 LuCI 中选择 Mori。
 
-这一配方与独立 `.tar.gz` 安装方式不同。独立安装包的检查结果不能代替完整 SDK 编译与对应 `.apk` / `.ipk` 安装验证；发布原生软件包前应实际完成该分支的构建和设备测试。
+原生包包含固件框架生成的安装及卸载包装脚本，检查源码中的 `Makefile` 不足以验证最终行为。发布前还应检查成品 APK 的元数据、文件清单和实际脚本，在隔离的同版本根文件系统执行安装与卸载，再对目标设备进行安装验证。
+
+APK 的卸载前脚本错误不能被当作可靠的阻止机制。支持的用户卸载入口是 `mori-register --prepare-remove && apk del luci-theme-mori`：先完成草稿检查和备用主题选择，再进入 APK 卸载。修改这一流程时应同时验证无备用主题和存在草稿的失败路径。
 
 ## 验证建议
 
@@ -97,4 +131,4 @@ make package/luci-theme-mori/compile V=s
 
 源码提交、Release 附件和原生包测试是独立步骤。文档中不要将未实际生成或未测试的产物写成已经可用。
 
-仓库的 GitHub Actions 会检查脚本语法、构建并校验独立安装包，成功后在对应运行中保留归档产物；此工作流不代替 SDK 原生软件包构建。
+仓库的常规 GitHub Actions 会检查脚本语法、构建并校验独立安装包。原生 SDK 构建和成品包测试使用独立工作流；两种产物的验证结果不能互相替代。

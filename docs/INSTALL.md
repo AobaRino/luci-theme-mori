@@ -1,6 +1,6 @@
 # 安装、升级与回退
 
-本文适用于本仓库构建出的独立 `.tar.gz` 安装包。通过固件包管理器安装的版本应继续使用同一种包管理器维护，不要与独立安装器混用。
+Mori 提供原生 `.apk` 和独立 `.tar.gz` 两种安装方式。通过包管理器安装后，应继续使用包管理器维护；独立安装器及其回退脚本不用于覆盖包管理器管理的文件。
 
 ## 支持环境
 
@@ -10,7 +10,75 @@
 
 旧版 Lua `.htm` 模板运行时不受支持。独立安装器会先检查环境、安装清单及模板，检查失败时应按提示处理，不要跳过检查强行安装。
 
-## 1. 在电脑上构建
+## 原生 APK
+
+原生包面向 ImmortalWrt 25.12.0 的 APK 包管理器。它使用官方 x86/64 SDK 构建，包内为架构无关资源，APK 元数据标为 `noarch`。这不代表其他架构、固件分支或旧版 `opkg` 系统已测试；不要将 `.apk` 交给 `opkg` 安装，也不要只修改后缀。
+
+### 下载与校验
+
+从同一个 [Release](https://github.com/AobaRino/luci-theme-mori/releases) 下载以下三个文件，保持文件名不变。以 v0.1.0 为例：
+
+```text
+luci-theme-mori-0.1.0-r1.apk
+mori-sdk-signing-public.pem
+APK-SHA256SUMS
+```
+
+`APK-SHA256SUMS` 只校验 APK 和公钥。完整构建记录另外包含 SDK、feeds、源码提交、成品元数据、文件及脚本检查记录，适合需要核对构建来源时查看。
+
+将文件上传到路由器 `/tmp/`。示例中的 `router.lan` 换成自己的路由器地址，密码由 SSH / SCP 交互输入：
+
+```sh
+scp -O luci-theme-mori-0.1.0-r1.apk mori-sdk-signing-public.pem APK-SHA256SUMS root@router.lan:/tmp/
+ssh root@router.lan
+```
+
+以下命令在路由器上执行：
+
+```sh
+cd /tmp
+sha256sum -c APK-SHA256SUMS
+MORI_KEYS="$(mktemp -d /tmp/mori-keys.XXXXXX)"
+cp mori-sdk-signing-public.pem "$MORI_KEYS/"
+apk --keys-dir "$MORI_KEYS" --no-network --repositories-file /dev/null verify /tmp/luci-theme-mori-0.1.0-r1.apk
+apk --keys-dir "$MORI_KEYS" --no-network --repositories-file /dev/null add --no-commit-hooks /tmp/luci-theme-mori-0.1.0-r1.apk
+```
+
+每一步都应成功后再继续。公钥只用于上述命令的临时目录，不写入系统的 `/etc/apk/keys`；`--no-network` 和空软件源列表使这次操作只安装已上传的本地包。不要省略校验，或用 `--force-overwrite` 绕过文件冲突。若缺少依赖，先使用固件原有的可信软件源补齐提示的依赖，再重新安装 Mori。
+
+`--no-commit-hooks` 跳过设备上额外的 APK 全局事务钩子，Mori 自身的安装及主题登记脚本仍会执行。
+
+每个构建使用临时签名密钥，后续版本应下载对应 Release 的公钥，不能沿用上一个构建的公钥。
+
+### 启用与升级
+
+原生包安装默认只登记 Mori，保留当前主题选择。在 LuCI 的 **系统 → 系统 → 语言和界面** 中选择 Mori 后保存；先完成或放弃其他待应用设置。
+
+如果安装输出提示 `registration deferred`，软件包可能已安装，但主题登记因现有 LuCI 草稿而延后。处理这些草稿后执行 `sh /usr/libexec/mori-register`，再刷新主题列表；脚本不会替你提交或丢弃草稿。
+
+升级时获取新版本对应的 APK、公钥及校验文件，按相同流程校验后通过 APK 安装。安装脚本不全局提交 UCI 配置，也不重启网络、DNS、代理或 Web 服务。LuCI 的模块索引缓存可能由固件包框架刷新，这与服务重启不同。
+
+### 安全卸载
+
+在路由器 SSH 中执行：
+
+```sh
+sh /usr/libexec/mori-register --prepare-remove && apk del luci-theme-mori
+```
+
+准备命令会先检查 LuCI 草稿。如果 Mori 正在使用，它会在已登记且资源、模板有效的其他主题中选择备用主题，优先 Bootstrap，并只更新主题选择。存在草稿或没有可用备用主题时，命令会停止，后面的 `apk del` 不会执行。Mori 未在使用时，它在完成草稿检查后直接通过。
+
+保留上述 `&&`。APK 的卸载前脚本返回错误不一定能阻止卸载，不能仅依赖包内钩子保护当前界面。包钩子会尽力准备备用主题，但直接执行 `apk del` 不能代替这个有条件的卸载流程。
+
+### 从独立安装转交 APK 管理
+
+先保留独立安装的备份，并确认没有未提交的 LuCI 设置。使用同版本、完整校验过的 APK 接管主题后，后续升级和卸载都改用 APK；不要再运行旧独立安装的回退脚本。
+
+如果包管理器报告文件已由其他包持有或文件冲突，应停止并检查来源，不要强制覆盖。不同版本的独立安装和原生 APK 之间，不应在没有核对文件清单的情况下直接混合。
+
+## 独立安装包
+
+### 1. 在电脑上构建
 
 需要 Python 3.10 或更新版本。安装 Node.js 后，检查脚本还会执行 JavaScript 语法检查。
 
@@ -32,7 +100,7 @@ dist/luci-theme-mori-0.1.0.tar.gz.sha256
 
 从源码构建时，以当前 `VERSION` 和实际产物名称为准。若从仓库 Release 获取安装包，应同时获取对应的校验文件；没有附件时使用上述本地构建流程。
 
-## 2. 上传并解压
+### 2. 上传并解压
 
 将示例中的 `router.lan` 换成自己的路由器地址。密码由 SSH / SCP 交互输入，不应写入脚本或仓库。
 
@@ -52,7 +120,7 @@ tar -xzf luci-theme-mori-0.1.0.tar.gz
 cd luci-theme-mori-0.1.0
 ```
 
-## 3. 安装并启用
+### 3. 安装并启用
 
 ```sh
 sh scripts/install.sh --activate
@@ -69,7 +137,7 @@ sh scripts/install.sh --activate
 
 安装成功后刷新后台页面。浏览器页签、登录页、侧栏及主题选项应显示 Mori。顶部按钮可切换明暗模式，选择仅保存在浏览器中。
 
-### 只安装，稍后再切换
+#### 只安装，稍后再切换
 
 ```sh
 sh scripts/install.sh
@@ -79,7 +147,7 @@ sh scripts/install.sh
 
 如果安装器提示存在 LuCI 草稿，应先在对应页面完成或放弃这些修改，再重新运行。安装器不会代为清除草稿。
 
-## 升级
+### 升级独立安装
 
 构建或获取新版本，按相同步骤上传、校验并解压，再运行新版本的安装器。不要从源码仓库目录直接运行 `scripts/install.sh`，它需要构建产物中的 `rootfs/` 和校验清单。
 
@@ -87,7 +155,7 @@ sh scripts/install.sh
 
 固件大版本升级后应重新确认 ucode LuCI 兼容性。自定义主题文件是否随固件升级保留取决于固件升级方式，不由此安装器保证。
 
-## 回退或移除独立安装
+### 回退或移除独立安装
 
 成功安装时终端会显示本次备份目录和完整回退命令，格式如下：
 
@@ -107,9 +175,9 @@ sh /root/mori-backups/<本次安装目录>/rollback.sh
 
 ## 通过 SDK 构建原生软件包
 
-仓库同时提供 OpenWrt / ImmortalWrt 的 `Makefile`，见[开发说明](DEVELOPMENT.md#sdk-软件包)。该方式生成的 `.apk` 或 `.ipk` 应由目标固件匹配的包管理器安装、升级和卸载。
+仓库提供对应 ImmortalWrt SDK 的构建脚本与 `Makefile`，见[开发说明](DEVELOPMENT.md#sdk-软件包)。当前原生发布流程生成 `.apk`；没有宣称已构建或验证旧版 `.ipk`。
 
-软件包安装默认只登记 Mori，不自动改变主题选择。删除软件包前先切换到其他已安装主题。独立安装包的回退脚本不用于撤销包管理器操作。
+软件包安装默认只登记 Mori，不自动改变主题选择。删除软件包时使用上文的准备命令。独立安装包的回退脚本不用于撤销包管理器操作。
 
 如果将主题直接编入固件镜像，请在首次启动后执行 `sh /usr/libexec/mori-register`，再在 LuCI 中选择 Mori。登记脚本会保留当前主题与其他配置。
 
