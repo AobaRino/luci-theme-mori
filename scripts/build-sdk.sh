@@ -76,6 +76,7 @@ export TZ=UTC LC_ALL=C
 CONFIG_ALL=n
 CONFIG_ALL_NONSHARED=n
 CONFIG_ALL_KMODS=n
+CONFIG_AUTOREMOVE=n
 CONFIG_SIGNED_PACKAGES=n
 CONFIG_PACKAGE_luci-theme-mori=m
 CONFIG_LUCI_MINIFY_JS=n
@@ -105,9 +106,11 @@ chmod 600 "$work/signing/private.pem"
 openssl pkey -in "$work/signing/private.pem" -pubout -out "$out/mori-sdk-signing-public.pem"
 cp "$out/mori-sdk-signing-public.pem" "$work/keys/"
 package="$out/$package_name"
-"$apk" adbsign --sign-key "$work/signing/private.pem" "$package"
+printf '%s\n' 'Signing the locally built unsigned APK with a disposable build key'
+"$apk" --allow-untrusted adbsign --sign-key "$work/signing/private.pem" "$package"
+printf '%s\n' 'Verifying the signed APK with its scoped public key'
 "$apk" --keys-dir "$work/keys" --no-network --repositories-file /dev/null verify "$package" > "$out/signature-verification.txt"
-"$apk" adbdump "$package" > "$out/package-metadata.yaml"
+"$apk" --keys-dir "$work/keys" adbdump "$package" > "$out/package-metadata.yaml"
 mkdir -p "$work/payload" "$out/hooks"
 "$apk" --keys-dir "$work/keys" extract --no-chown --destination "$work/payload" "$package"
 hook_dir=$(find "$sdk/build_dir" -type d -path '*/apk-all/luci-theme-mori' -print)
