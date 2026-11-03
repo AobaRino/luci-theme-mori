@@ -1,0 +1,15 @@
+/dist/
+/.local/
+/.venv/
+__pycache__/
+*.py[cod]
+.DS_Store
+Thumbs.db
+.env
+.env.*
+*.pem
+*.key
+*.log
+/evidence/
+/reference/
+/router-sources*

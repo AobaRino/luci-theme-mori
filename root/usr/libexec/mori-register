@@ -1,0 +1,30 @@
+#!/bin/sh
+# SPDX-License-Identifier: Apache-2.0
+# Register Mori without changing the active theme or committing user drafts.
+# Deliberately outside /etc/uci-defaults: the package framework globally
+# commits UCI after processing that directory.
+set -eu
+[ -z "${IPKG_INSTROOT:-}" ] || exit 0
+[ -f /etc/config/luci ] || exit 1
+[ -z "$(uci -q changes luci)" ] || {
+  echo 'Mori: LuCI has uncommitted changes; registration deferred.' >&2
+  exit 1
+}
+[ "$(uci -q get luci.themes.Mori || true)" != /luci-static/mori ] || exit 0
+uci -q get luci.themes >/dev/null || exit 1
+work=$(mktemp -d /tmp/mori-register.XXXXXX)
+trap 'rm -rf "$work"' EXIT
+trap 'exit 130' HUP INT TERM
+mkdir "$work/config" "$work/delta"
+name=mori_register_$$
+[ ! -e "/tmp/.uci/$name" ] || exit 1
+cp -p /etc/config/luci "$work/luci.before"
+cp "$work/luci.before" "$work/config/$name"
+uci -c "$work/config" -t "$work/delta" set "$name.themes.Mori=/luci-static/mori"
+uci -c "$work/config" -t "$work/delta" commit "$name"
+[ -z "$(uci -q changes luci)" ] || exit 1
+cmp -s "$work/luci.before" /etc/config/luci || exit 1
+cp -p /etc/config/luci "/etc/config/.luci-mori-next-$$"
+cat "$work/config/$name" > "/etc/config/.luci-mori-next-$$"
+mv "/etc/config/.luci-mori-next-$$" /etc/config/luci
+exit 0
