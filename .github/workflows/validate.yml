@@ -2,8 +2,10 @@ name: Validate and build
 
 on:
   push:
+    branches: ['**']
   pull_request:
   workflow_dispatch:
+  workflow_call:
 
 permissions:
   contents: read
@@ -11,9 +13,11 @@ permissions:
 jobs:
   standalone:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7
         with:
+          ref: ${{ github.sha }}
           persist-credentials: false
       - uses: actions/setup-python@v7
         with:
@@ -22,6 +26,8 @@ jobs:
         run: |
           sh -n scripts/install.sh
           sh -n scripts/rollback.sh
+          sh -n scripts/build-sdk.sh
+          sh -n scripts/test-native.sh
           sh -n root/usr/libexec/mori-register
           node --check htdocs/luci-static/mori/theme.js
           node --check htdocs/luci-static/resources/menu-mori.js
@@ -30,7 +36,7 @@ jobs:
           python scripts/build.py
           python scripts/check.py
           git diff --exit-code
-      - name: Exercise installer and rollback guards
+      - name: Exercise installer and release guards
         run: python -m unittest discover -s tests -v
       - uses: actions/upload-artifact@v7
         with:

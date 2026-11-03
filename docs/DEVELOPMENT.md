@@ -123,12 +123,43 @@ APK 的卸载前脚本错误不能被当作可靠的阻止机制。支持的用�
 
 ## 发布
 
-1. 同步更新 `VERSION`、`Makefile` 的 `PKG_VERSION` 和必要的文档版本示例。
-2. 运行检查及构建，核对归档内容和文件校验值。
-3. 在目标固件验证实际界面、安装和回退，说明未覆盖的版本。
-4. 检查待提交文件中没有凭据、会话、真实配置或私有设备截图。
-5. 将源码推送到仓库；如发布安装包，再单独将已验证的归档及校验信息附到 Release。
+[Release Mori 工作流](../.github/workflows/release.yml) 在推送 `vX.Y.Z` tag 后自动构建、测试并发布。它要求 tag 去掉 `v` 后与 `VERSION`、`Makefile` 中的 `PKG_VERSION` 完全一致，`PKG_RELEASE` 为正整数。当前自动发布只接受正式版本，例如 `v0.1.1`；不匹配的 tag 会在下载 SDK 前失败。
 
-源码提交、Release 附件和原生包测试是独立步骤。文档中不要将未实际生成或未测试的产物写成已经可用。
+发布新版本时：
 
-仓库的常规 GitHub Actions 会检查脚本语法、构建并校验独立安装包。原生 SDK 构建和成品包测试使用独立工作流；两种产物的验证结果不能互相替代。
+1. 更新 `VERSION`、`Makefile` 的 `PKG_VERSION`、包修订号及必要的文档示例。
+2. 运行 `python3 scripts/build.py` 和 `python3 scripts/check.py`，提交更新后的模板资源指纹及版本文件。
+3. 确认提交中不包含凭据、设备配置或私有截图。涉及界面及固件兼容性的改动，应补充目标设备上的实际验证。
+4. 先将版本提交推送到默认分支 `main`，再为该提交打 tag 并推送。以下以源码已更新到 `0.1.1` 为例：
+
+```sh
+git push origin main
+git tag -a v0.1.1 -m "Mori v0.1.1"
+git push origin v0.1.1
+```
+
+在 [Actions](https://github.com/AobaRino/luci-theme-mori/actions/workflows/release.yml) 查看 **Release Mori**。流程依次执行：
+
+1. 核对 tag、源码版本和当前提交。
+2. 并行运行源码/脚本检查、独立安装器与发布保护测试，以及固定 SDK 构建、签名和文件审计、官方隔离 rootfs 中的安装/升级脚本/卸载测试。
+3. 下载本次运行通过测试的产物，复核校验值、源码提交及文件清单，组装发布附件。
+4. 再次确认远程 tag 指向受测提交，创建 Release 草稿、上传附件并核对 GitHub 返回的每个附件 SHA-256 和大小。
+5. 附件全部一致后将草稿公开为正式 Release。
+
+自动发布包含 7 个附件：原生 APK、公钥、`APK-SHA256SUMS`、独立安装包及其校验文件、SDK 验证归档及其校验文件。原生包上传的是本次测试完成的同一份文件，不在发布阶段重新构建或签名。
+
+构建和测试 job 只有仓库读取权限；只有最后的发布 job 使用内置 `GITHUB_TOKEN` 的 `contents: write` 权限，无需配置 PAT 或路由器凭据。CI 不连接实际路由器，也不将隔离测试写成实机验收。`docs/VALIDATION.md` 是 v0.1.0 的历史实机记录；后续版本的自动测试记录随各自附件提供。
+
+### 手动试跑与失败重试
+
+可在 **Release Mori → Run workflow** 选择分支进行试跑，或运行：
+
+```sh
+gh workflow run release.yml --ref main
+```
+
+手动运行会完成相同的版本检查、构建、测试及附件组装，并上传 `luci-theme-mori-release-bundle` Actions artifact；它始终跳过 Release 发布，即使选择了 tag 也不会发布。
+
+任一检查失败都不会公开新 Release。上传过程中失败可能留下草稿；在同一次 Actions 运行中选择 **Re-run failed jobs**，发布 job 会继续使用原产物，只补传缺失附件。相同的草稿或已发布 Release 必须与本次提交、附件清单及校验值完全一致，否则停止，不覆盖现有附件。
+
+不要通过强制移动已发布 tag 更新版本。完整重跑 SDK 会产生新的临时签名，因此与旧草稿的附件可能不同；遇到冲突时先检查失败日志及草稿，确认后处理未完成草稿或发布新版本，不能用强制覆盖跳过校验。

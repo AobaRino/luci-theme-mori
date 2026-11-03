@@ -62,6 +62,7 @@ sh scripts/install.sh --activate
 ## 开发与反馈
 
 - [开发、打包与仓库结构](docs/DEVELOPMENT.md)
+- [推送 tag 自动构建、测试和发布](docs/DEVELOPMENT.md#发布)
 - [问题反馈](https://github.com/AobaRino/luci-theme-mori/issues)
 
 反馈时请附固件版本、LuCI 版本、浏览器及复现页面。截图请先去除密码、令牌、外网地址、设备名称和其他不希望公开的信息。

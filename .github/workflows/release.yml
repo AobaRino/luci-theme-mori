@@ -1,0 +1,112 @@
+name: Release Mori
+
+on:
+  push:
+    tags: ['v*']
+  # Manual runs exercise the complete build/test pipeline without publishing.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mori-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  version:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      tag: ${{ steps.version.outputs.tag }}
+      commit: ${{ steps.version.outputs.commit }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Check tag and package versions
+        id: version
+        env:
+          REQUESTED_TAG: ${{ github.ref_type == 'tag' && github.ref_name || '' }}
+        run: |
+          tag="$REQUESTED_TAG"
+          if [ -z "$tag" ]; then tag="v$(cat VERSION)"; fi
+          commit="$(git rev-parse HEAD)"
+          python3 scripts/prepare-release.py --tag "$tag" --commit "$commit" --check-only
+          printf 'tag=%s\ncommit=%s\n' "$tag" "$commit" >> "$GITHUB_OUTPUT"
+
+  standalone:
+    needs: version
+    uses: ./.github/workflows/validate.yml
+
+  native:
+    needs: version
+    uses: ./.github/workflows/build-sdk.yml
+
+  assemble:
+    needs: [version, standalone, native]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.version.outputs.commit }}
+          persist-credentials: false
+      - uses: actions/download-artifact@v8
+        with:
+          name: luci-theme-mori-standalone
+          path: dist/
+      - uses: actions/download-artifact@v8
+        with:
+          name: luci-theme-mori-native-sdk
+          path: dist/sdk/
+      - name: Verify and assemble tested release assets
+        env:
+          RELEASE_TAG: ${{ needs.version.outputs.tag }}
+          SOURCE_COMMIT: ${{ needs.version.outputs.commit }}
+        run: |
+          python3 scripts/check.py
+          python3 scripts/prepare-release.py --tag "$RELEASE_TAG" --commit "$SOURCE_COMMIT"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: luci-theme-mori-release-bundle
+          path: |
+            dist/release/
+            dist/release-metadata/
+          if-no-files-found: error
+          retention-days: 30
+      - name: Record validation result
+        env:
+          RELEASE_TAG: ${{ needs.version.outputs.tag }}
+          SOURCE_COMMIT: ${{ needs.version.outputs.commit }}
+        run: |
+          printf 'Validated %s at `%s`.\n\n' "$RELEASE_TAG" "$SOURCE_COMMIT" >> "$GITHUB_STEP_SUMMARY"
+          printf '%s\n' 'Source checks, installer tests, SDK build, signed payload audit and isolated native installation/removal passed. The release bundle contains the tested artifacts and their manifest.' >> "$GITHUB_STEP_SUMMARY"
+          if [ "$GITHUB_EVENT_NAME" = workflow_dispatch ]; then
+            printf '\n%s\n' 'Manual dry run: no GitHub Release is created or modified.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+  publish:
+    needs: [version, assemble]
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.version.outputs.commit }}
+          persist-credentials: false
+      - uses: actions/download-artifact@v8
+        with:
+          name: luci-theme-mori-release-bundle
+          path: dist/
+      - name: Publish only verified assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ needs.version.outputs.tag }}
+          SOURCE_COMMIT: ${{ needs.version.outputs.commit }}
+        run: |
+          python3 scripts/publish-release.py --repo "$GITHUB_REPOSITORY" --tag "$RELEASE_TAG" --commit "$SOURCE_COMMIT"
