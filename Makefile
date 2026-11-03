@@ -8,6 +8,8 @@ PKG_LICENSE:=Apache-2.0
 PKG_LICENSE_FILES:=LICENSE
 
 LUCI_TITLE:=Mori - a calm, modern LuCI theme
+LUCI_URL:=https://github.com/AobaRino/luci-theme-mori
+LUCI_MAINTAINER:=AobaRino
 LUCI_DEPENDS:=+luci-base +ucode +ucode-mod-uci +ucode-mod-fs
 LUCI_PKGARCH:=all
 # Keep audited source templates and custom-property CSS unchanged by the SDK.
@@ -27,13 +29,14 @@ fi
 exit 0
 endef
 
-# Refuse to remove the selected theme; keep the working UI available.
+# Best-effort fallback only: apk does not abort removal when prerm fails.
+# For a guarded uninstall, run the helper with --prepare-remove before apk del.
 define Package/luci-theme-mori/prerm
 #!/bin/sh
 [ -n "$${IPKG_INSTROOT}" ] && exit 0
 [ "$${PKG_UPGRADE}" = 1 ] && exit 0
-if [ "$$(uci -q get luci.main.mediaurlbase)" = /luci-static/mori ]; then
-	echo 'Select another LuCI theme before removing Mori.' >&2
+if ! sh /usr/libexec/mori-register --prepare-remove; then
+	echo 'Mori: removal was not prepared. APK may continue despite this failure; restore or select a working theme immediately.' >&2
 	exit 1
 fi
 exit 0

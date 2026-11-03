@@ -1,30 +1,100 @@
 #!/bin/sh
 # SPDX-License-Identifier: Apache-2.0
-# Register Mori without changing the active theme or committing user drafts.
+# Register Mori, or prepare its removal, without committing user drafts.
 # Deliberately outside /etc/uci-defaults: the package framework globally
 # commits UCI after processing that directory.
 set -eu
+umask 077
+
+fail() { printf 'Mori: %s\n' "$*" >&2; exit 1; }
+mode=register
+case "${1:-}" in
+  '') ;;
+  --prepare-remove) mode=remove; shift ;;
+  -h|--help) printf 'Usage: sh /usr/libexec/mori-register [--prepare-remove]\n'; exit 0 ;;
+  *) fail 'Unknown option.' ;;
+esac
+[ "$#" -eq 0 ] || fail 'Unexpected arguments.'
 [ -z "${IPKG_INSTROOT:-}" ] || exit 0
-[ -f /etc/config/luci ] || exit 1
-[ -z "$(uci -q changes luci)" ] || {
-  echo 'Mori: LuCI has uncommitted changes; registration deferred.' >&2
-  exit 1
+[ -f /etc/config/luci ] || fail 'LuCI configuration is missing.'
+[ ! -L /etc/config/luci ] || fail 'Refusing a symlinked LuCI configuration.'
+check_drafts() {
+  drafts=$(uci -q changes luci) || fail 'Could not inspect LuCI drafts.'
+  [ -z "$drafts" ] || fail 'LuCI has uncommitted changes; resolve them before continuing.'
 }
-[ "$(uci -q get luci.themes.Mori || true)" != /luci-static/mori ] || exit 0
-uci -q get luci.themes >/dev/null || exit 1
+check_drafts
 work=$(mktemp -d /tmp/mori-register.XXXXXX)
-trap 'rm -rf "$work"' EXIT
+next=
+cleanup() {
+  [ -z "$next" ] || rm -f "$next"
+  rm -rf "$work"
+}
+trap cleanup EXIT
 trap 'exit 130' HUP INT TERM
 mkdir "$work/config" "$work/delta"
 name=mori_register_$$
-[ ! -e "/tmp/.uci/$name" ] || exit 1
+[ ! -e "/tmp/.uci/$name" ] || fail 'Temporary UCI name is already in use.'
 cp -p /etc/config/luci "$work/luci.before"
 cp "$work/luci.before" "$work/config/$name"
-uci -c "$work/config" -t "$work/delta" set "$name.themes.Mori=/luci-static/mori"
-uci -c "$work/config" -t "$work/delta" commit "$name"
-[ -z "$(uci -q changes luci)" ] || exit 1
-cmp -s "$work/luci.before" /etc/config/luci || exit 1
-cp -p /etc/config/luci "/etc/config/.luci-mori-next-$$"
-cat "$work/config/$name" > "/etc/config/.luci-mori-next-$$"
-mv "/etc/config/.luci-mori-next-$$" /etc/config/luci
+staged_uci() { uci -c "$work/config" -t "$work/delta" "$@"; }
+check_unchanged() {
+  check_drafts
+  cmp -s "$work/luci.before" /etc/config/luci || fail 'LuCI configuration changed; retry when it is idle.'
+}
+
+# Only consider registered themes with their own ucode templates and CSS.
+# Reject symlinks so a fallback cannot disappear with Mori's owned files.
+valid_fallback() {
+  case "$1" in /luci-static/*) theme=${1#/luci-static/} ;; *) return 1 ;; esac
+  case "$theme" in ''|mori|*[!A-Za-z0-9_-]*) return 1 ;; esac
+  assets=/www/luci-static/$theme
+  templates=/usr/share/ucode/luci/template/themes/$theme
+  [ -d "$assets" ] && [ ! -L "$assets" ] || return 1
+  [ -d "$templates" ] && [ ! -L "$templates" ] || return 1
+  for template in "$templates/header.ut" "$templates/footer.ut"; do
+    [ -s "$template" ] && [ ! -L "$template" ] || return 1
+    ucode -e 'loadfile(ARGV[0], {raw_mode:false});' "$template" >/dev/null 2>&1 || return 1
+  done
+  for asset in "$assets"/*.css; do
+    [ -s "$asset" ] && [ ! -L "$asset" ] && return 0
+  done
+  return 1
+}
+
+if [ "$mode" = remove ]; then
+  current=$(staged_uci -q get "$name.main.mediaurlbase" || true)
+  if [ "$current" != /luci-static/mori ]; then
+    check_unchanged
+    exit 0
+  fi
+  fallback=
+  keys=$(staged_uci -q show "$name.themes" | sed -n "s/^$name\\.themes\\.\\([A-Za-z0-9_][A-Za-z0-9_]*\\)=.*/\\1/p")
+  # UCI option identifiers are filtered above; word splitting here is deliberate.
+  for key in Bootstrap $keys; do
+    candidate=$(staged_uci -q get "$name.themes.$key" || true)
+    if valid_fallback "$candidate"; then
+      fallback=$candidate
+      break
+    fi
+  done
+  [ -n "$fallback" ] || fail 'No usable alternate theme is installed. Install and select one before removing Mori.'
+  staged_uci set "$name.main.mediaurlbase=$fallback"
+else
+  if [ "$(staged_uci -q get "$name.themes.Mori" || true)" = /luci-static/mori ]; then
+    check_unchanged
+    exit 0
+  fi
+  staged_uci -q get "$name.themes" >/dev/null || fail 'LuCI theme registry is missing.'
+  staged_uci set "$name.themes.Mori=/luci-static/mori"
+fi
+staged_uci commit "$name"
+next=$(mktemp /etc/config/.luci-mori-next.XXXXXX)
+cp -p "$work/luci.before" "$next"
+cat "$work/config/$name" > "$next"
+check_unchanged
+mv "$next" /etc/config/luci
+next=
+if [ "$mode" = remove ]; then
+  printf 'Mori: selected %s; package removal can proceed.\n' "$fallback"
+fi
 exit 0
