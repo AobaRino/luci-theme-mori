@@ -16,15 +16,14 @@ The derived components are:
 | Mori files | Source and changes |
 | --- | --- |
 | `ucode/template/themes/mori/*.ut` | Argon templates, modified for Mori branding, local assets, page scoping and appearance controls. Original template copyright headers are retained. |
-| `htdocs/luci-static/mori/css/` | Argon compatibility styles; bundled display-font references are replaced with system fonts. Mori's own visual changes live in `mori.css`. |
+| `htdocs/luci-static/mori/css/cascade.css` | Argon layout and component compatibility stylesheet, adapted to Mori custom properties with legacy display-font and unused asset references removed. Mori's visual rules live in `mori.css`. |
 | `htdocs/luci-static/resources/menu-mori.js` | Argon menu implementation, included under a Mori-specific module name. |
-| `htdocs/luci-static/mori/fonts/argon.woff` and `argon.woff2` | Argon's icon font, retained to support the compatible menu and component icons. |
-| `htdocs/luci-static/mori/icon/` and `img/` | Small compatibility assets from the same Argon package: arrows, a loading indicator, the blank background and volume-control icons. |
+| `htdocs/luci-static/mori/fonts/argon.woff2` | Argon's icon font, retained to support the compatible menu and component icons. |
+| `htdocs/luci-static/mori/icon/` | Small compatibility assets from the same Argon package: dropdown arrows and a loading indicator. |
 
-The retained icon-font files match the upstream v2.4.3 files:
+The retained icon-font file matches the upstream v2.4.3 file:
 
 ```text
-argon.woff   1f2d0d2837b0c22b440c6537a67f98f697d12c3ff490e99d64be26b3324fe1a3
 argon.woff2  a2b317e0113b0e5eb3ffe4ec7559d784564f02e8624ba29bbc44d7afd74585a4
 ```
 

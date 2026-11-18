@@ -1,6 +1,6 @@
-/* Mori: visual overrides for the Argon compatibility stylesheet.
- * Shell rules apply to every page. LuCI content rules require mori-native.
- * Do not use blanket display/overflow rules: LuCI owns component visibility.
+/* Mori: visual stylesheet for the shell, native LuCI views, and dark mode.
+ * Shell and compatibility variables apply to every page; content layout rules
+ * require mori-native. Do not use blanket display/overflow rules.
  */
 body.mori-modern {
   --mori-bg: #f4f6f5;
@@ -22,6 +22,23 @@ body.mori-modern {
   --mori-shadow: 0 12px 40px rgba(31, 52, 40, .12);
   --mori-radius: 16px;
   --mori-font: "Segoe UI", "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
+  --primary: var(--mori-accent);
+  --dark-primary: var(--mori-accent);
+  --header-color: var(--mori-panel);
+  --menu-bg-color: var(--mori-side);
+  --menu-color: var(--mori-muted);
+  --main-menu-color: var(--mori-text);
+  --gray: var(--mori-muted);
+  --gray-dark: var(--mori-text);
+  --gray-dark-400: var(--mori-muted);
+  --light: var(--mori-muted);
+  --lighter: var(--mori-border);
+  --white: var(--mori-panel);
+  --dark: var(--mori-text);
+  --default: var(--mori-text);
+  --background-color: var(--mori-bg);
+  --bs-heading-color: var(--mori-text);
+  color-scheme: light;
   background: var(--mori-bg);
 }
 html[data-mori-theme="dark"] body.mori-modern {
@@ -42,6 +59,7 @@ html[data-mori-theme="dark"] body.mori-modern {
   --mori-info: #9dcbdf;
   --mori-info-bg: #243842;
   --mori-shadow: 0 16px 48px rgba(0, 0, 0, .32);
+  color-scheme: dark;
 }
 
 /* Application shell. Keep the existing scroll and menu state mechanisms. */
@@ -91,7 +109,7 @@ body.mori-modern .mori-brand-copy small {
   font: 400 10px/1.4 var(--mori-font);
   letter-spacing: 2px;
 }
-body.mori-modern .main-left .nav { margin: 0 0 20px; }
+body.mori-modern .main-left .nav { margin: 0 0 20px; order: 1; }
 body.mori-modern .main .main-left .nav > li > a:first-child,
 body.mori-modern .main .main-left .nav > li > .menu {
   margin: 3px 12px;
@@ -117,13 +135,13 @@ body.mori-modern .main .main-left .nav > li > .menu.active {
 }
 body.mori-modern .main-left .nav > li > a:first-child::before,
 body.mori-modern .main-left .nav > li > .menu::before {
-  color: currentColor !important;
+  color: currentColor;
   left: 13px;
   font-size: 16px;
 }
 body.mori-modern .main-left .nav > li > a:first-child::after,
 body.mori-modern .main-left .nav > li > .menu::after {
-  color: currentColor !important;
+  color: currentColor;
   right: 10px;
   top: 14px;
   opacity: .65;
@@ -136,7 +154,8 @@ body.mori-modern .main .main-left .nav li.slide .slide-menu li a {
   font: 400 13px/1.5 var(--mori-font);
   color: var(--mori-muted);
 }
-body.mori-modern .main-left .nav li.slide .slide-menu li::after { content: none; }
+body.mori-modern .main-left .nav li.slide .slide-menu li::after,
+body.mori-modern .main-left .nav li.slide .slide-menu li a::after { content: none; }
 body.mori-modern .main-left .nav li.slide .slide-menu li:hover a { background: var(--mori-tint); color: var(--mori-text); }
 body.mori-modern .main-left .nav li.slide .slide-menu li.active > a,
 body.mori-modern .main-left .nav li.slide .slide-menu a.active {
@@ -150,6 +169,7 @@ body.mori-modern .mori-sidebar-footer {
   border-top: 1px solid var(--mori-border);
   color: var(--mori-muted);
   font: 12px/1.7 var(--mori-font);
+  order: 2;
 }
 body.mori-modern .mori-sidebar-footer strong { display: block; color: var(--mori-text); font-weight: 500; }
 body.mori-modern .main > .main-right { min-width: 0; background: var(--mori-bg); transition: none; }
@@ -159,7 +179,7 @@ body.mori-modern .main-right > header {
   z-index: 80;
   flex-shrink: 0;
   color: var(--mori-text);
-  background: var(--mori-panel) !important;
+  background: var(--mori-panel);
   border-bottom: 1px solid var(--mori-border);
   font: 14px/1.5 var(--mori-font);
 }
@@ -170,6 +190,7 @@ body.mori-modern .main-right > header .fill > .container > .flex1 { display: fle
 body.mori-modern .main-right > header .showSide { color: var(--mori-text); }
 body.mori-modern .main-right > header .brand { color: var(--mori-text); font: 500 16px/1.4 var(--mori-font); }
 body.mori-modern .mori-topbar-title { color: var(--mori-muted); font: 13px/1.5 var(--mori-font); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+body.mori-modern .mori-topbar-title > span::before { content: " / "; margin: 0 10px; color: var(--mori-border); }
 body.mori-modern .mori-topbar-actions { display: flex; align-items: center; gap: 9px; margin-left: auto; }
 body.mori-modern .mori-theme-toggle {
   display: inline-flex;
@@ -193,56 +214,66 @@ body.mori-modern .mori-theme-toggle:focus-visible,
 body.mori-modern .main-left a:focus-visible,
 body.mori-modern .main-right > header a:focus-visible { outline: 2px solid var(--mori-accent); outline-offset: 3px; }
 body.mori-modern .main-right > header .fill .status span { font-size: 12px; font-weight: 500; padding: 5px 9px; border-radius: 7px; box-shadow: none; }
-body.mori-modern .main-right > header .fill .status span[data-style="active"] { background: var(--mori-tint); color: var(--mori-accent); }
-body.mori-modern .main-right > header .fill .status span[data-style="inactive"] { background: var(--mori-warning-bg); color: var(--mori-warning) !important; }
+body.mori-modern .main-right > header .fill .status span[data-style="active"],
+body.mori-modern #xhr_poll_status > .label.success { background: var(--mori-tint); color: var(--mori-accent) !important; }
+body.mori-modern .main-right > header .fill .status span[data-style="inactive"] { background: var(--mori-warning-bg); color: var(--mori-warning); }
 body.mori-modern .main-right > #maincontent > .container { margin: 24px 28px 28px; gap: 20px; }
 body.mori-modern .main-right > footer { padding: 15px 28px 20px; color: var(--mori-muted); font: 12px/1.6 var(--mori-font); text-align: left; white-space: normal; }
+body.mori-modern .main-right > footer .footer-content { display: flex; flex-wrap: wrap; gap: .5em; justify-content: flex-end; }
 body.mori-modern .main-right > footer a { color: var(--mori-muted); }
 body.mori-modern .main-left::-webkit-scrollbar-thumb { background: var(--mori-border); }
 body.mori-modern .main-left::-webkit-scrollbar-track { background: transparent; }
 
 /* Theme-owned overview components. */
-body.mori-modern .mori-page-intro { margin: 0 0 2px; color: var(--mori-text); font-family: var(--mori-font); }
+body.mori-modern .mori-page-intro {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 0 0 2px;
+  color: var(--mori-text);
+  font-family: var(--mori-font);
+}
 body.mori-modern .mori-page-intro h1,
-body.mori-modern .mori-page-intro h2 { margin: 0; padding: 0; border: 0; background: transparent; box-shadow: none; color: var(--mori-text); font-size: 28px; font-weight: 600; line-height: 1.3 !important; letter-spacing: -.6px; }
-body.mori-modern .mori-page-intro p { margin: 7px 0 0; color: var(--mori-muted); font-size: 13px; line-height: 1.6; }
+body.mori-modern .mori-page-intro h2 { margin: 0; padding: 0; border: 0; background: transparent; box-shadow: none; color: var(--mori-text); font-size: 28px; font-weight: 600; line-height: 1.3; letter-spacing: -.6px; }
+body.mori-modern .mori-page-intro p { margin: 0; color: var(--mori-muted); font-size: 13px; line-height: 1.6; }
+body.mori-modern .mori-overview-link { color: var(--mori-accent); font-size: 13px; text-decoration: none; }
 body.mori-modern .mori-summary-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); background: var(--mori-panel); border: 1px solid var(--mori-border); border-radius: var(--mori-radius); padding: 18px 0; font-family: var(--mori-font); }
 body.mori-modern .mori-stat { min-width: 0; padding: 0 22px; border-right: 1px solid var(--mori-border); }
 body.mori-modern .mori-stat:last-child { border-right: 0; }
 body.mori-modern .mori-stat-label { display: block; color: var(--mori-muted); font-size: 12px; line-height: 1.5; }
 body.mori-modern .mori-stat-value { display: block; margin: 8px 0 2px; color: var(--mori-text); font-size: 27px; font-weight: 600; line-height: 1.2; letter-spacing: -.6px; font-variant-numeric: tabular-nums; }
 body.mori-modern .mori-stat-value small { color: var(--mori-muted); font-size: 12px; font-weight: 400; letter-spacing: 0; }
-body.mori-modern .mori-stat > small { display: block; color: var(--mori-muted); font-size: 12px; line-height: 1.5; }
+body.mori-modern .mori-stat > small,
+body.mori-modern .mori-stat-note { display: block; margin-top: 7px; color: var(--mori-muted); font-size: 12px; line-height: 1.5; overflow-wrap: anywhere; }
+body.mori-modern .mori-stat[data-mori-stat="uptime"] .mori-stat-value { font-size: 22px; line-height: 1.5; }
 
 /* Native LuCI pages only. No selectors in this section apply to plugins. */
 body.mori-native {
-  --primary: var(--mori-accent);
-  --dark-primary: var(--mori-accent);
-  --gray-dark: var(--mori-text);
-  --gray-dark-400: var(--mori-muted);
-  --main-menu-color: var(--mori-text);
-  --white: var(--mori-panel);
-  --lighter: var(--mori-border);
-  --background-color: var(--mori-bg);
-  --bs-heading-color: var(--mori-text);
   color: var(--mori-text);
   font: 14px/1.55 var(--mori-font);
 }
 body.mori-native #maincontent { color: var(--mori-text); }
-body.mori-native #maincontent h1 { border: 0; color: var(--mori-text); font-size: 28px; font-weight: 600; padding: 0; margin: 0 0 18px; line-height: 1.3 !important; letter-spacing: -.6px; }
-body.mori-native #maincontent h2 { padding: 16px 20px; border-radius: var(--mori-radius); background: var(--mori-panel); color: var(--mori-text); box-shadow: none; font-size: 19px; font-weight: 600; line-height: 1.5 !important; }
+body.mori-native #maincontent h1 { border: 0; color: var(--mori-text); font-size: 28px; font-weight: 600; padding: 0; margin: 0 0 18px; line-height: 1.3; letter-spacing: -.6px; }
+body.mori-native #maincontent h2 { padding: 16px 20px; border-radius: var(--mori-radius); background: var(--mori-panel); color: var(--mori-text); box-shadow: none; font-size: 19px; font-weight: 600; line-height: 1.5; }
 body.mori-native #maincontent h3,
-body.mori-native #maincontent h4 { color: var(--mori-text); background: transparent; box-shadow: none; font-size: 15px; font-weight: 600; line-height: 1.5 !important; }
+body.mori-native #maincontent h4 { color: var(--mori-text); background: transparent; box-shadow: none; font-size: 15px; font-weight: 600; line-height: 1.5; }
+body.mori-native.mori-overview #maincontent > .container > h2 { margin: 0; padding: 0; background: transparent; border-radius: 0; font-size: 28px; }
+body.mori-native.mori-overview #view { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+body.mori-native.mori-overview #view > .cbi-section { min-width: 0; margin: 0; }
+body.mori-native.mori-overview #view > .cbi-section:not([data-mori-section="memory"]):not([data-mori-section="storage"]) { grid-column: 1 / -1; }
 body.mori-native .cbi-map { margin-bottom: 0; }
 body.mori-native .cbi-map-descr { margin: 0 0 18px; color: var(--mori-muted); font-size: 13px; line-height: 1.65; }
 body.mori-native .cbi-section,
 body.mori-native .cbi-section-error,
 body.mori-native #iptables,
-body.mori-native .Firewall form,
+body.mori-native[data-page^="admin-network-firewall"] form,
 body.mori-native #cbi-network > .cbi-section-node,
 body.mori-native #cbi-wireless > .cbi-section-node,
 body.mori-native #cbi-wireless > #wifi_assoclist_table,
-body.mori-native [data-tab-title] {
+body.mori-native [data-tab-title],
+body.mori-native[data-page^="admin-system-admin"] .cbi-map:not(#cbi-dropbear) {
   border: 1px solid var(--mori-border);
   border-radius: var(--mori-radius);
   background: var(--mori-panel);
@@ -274,6 +305,7 @@ body.mori-native .cbi-value-description abbr { color: inherit; }
 body.mori-native .cbi-value-field { min-width: 0; }
 
 /* Text controls: preserve checkbox, radio, file and button geometry. */
+body.mori-native input:not([type]),
 body.mori-native input[type="text"],
 body.mori-native input[type="password"],
 body.mori-native input[type="number"],
@@ -284,6 +316,7 @@ body.mori-native input[type="date"],
 body.mori-native input[type="time"],
 body.mori-native select,
 body.mori-native textarea,
+body.mori-native .cbi-input-textarea,
 body.mori-native .cbi-dropdown:not(.cbi-button):not(.btn) {
   color: var(--mori-text);
   border: 1px solid var(--mori-border);
@@ -293,6 +326,7 @@ body.mori-native .cbi-dropdown:not(.cbi-button):not(.btn) {
   font-size: 14px;
   box-shadow: none;
 }
+body.mori-native input:not([type]),
 body.mori-native input[type="text"],
 body.mori-native input[type="password"],
 body.mori-native input[type="number"],
@@ -322,10 +356,10 @@ body.mori-native a:focus-visible { outline: 2px solid var(--mori-accent); outlin
 body.mori-native input:not(.cbi-button):focus,
 body.mori-native select:focus,
 body.mori-native textarea:focus,
-body.mori-native .cbi-dropdown:focus { border-color: var(--mori-accent); box-shadow: none; }
+body.mori-native .cbi-dropdown:focus,
+body.mori-native .cbi-dropdown[open] { border-color: var(--mori-accent); box-shadow: none; }
 body.mori-native input[type="checkbox"] { border-radius: 4px; border-color: var(--mori-muted); }
 body.mori-native input[type="checkbox"]:checked { border-color: var(--mori-accent); background-color: var(--mori-accent); }
-html[data-mori-theme="dark"] body.mori-native input[type="checkbox"]:checked { background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%23152e20' d='M6.564.75l-3.59 3.612-1.538-1.55L0 4.26 2.974 7.25 8 2.193z'/%3e%3c/svg%3e") !important; }
 body.mori-native input[type="radio"] { accent-color: var(--mori-accent); }
 body.mori-native input:disabled,
 body.mori-native select:disabled,
@@ -337,8 +371,8 @@ body.mori-native .cbi-button[disabled] { opacity: .5; cursor: not-allowed; box-s
 body.mori-native input.cbi-input-invalid,
 body.mori-native textarea.cbi-input-invalid,
 body.mori-native select.cbi-input-invalid,
-body.mori-native .cbi-dropdown.cbi-input-invalid { border-color: var(--mori-danger); }
-body.mori-native .cbi-input-invalid { color: var(--mori-danger); }
+body.mori-native .cbi-dropdown.cbi-input-invalid { border-color: var(--mori-danger) !important; }
+body.mori-native .cbi-input-invalid { color: var(--mori-danger) !important; }
 
 /* Dynamic lists and multi-selects keep LuCI's open/display attributes intact. */
 body.mori-native .cbi-dynlist > .item { border-color: var(--mori-border); border-radius: 7px; background-color: var(--mori-tint); color: var(--mori-text); padding-top: 6px; padding-bottom: 6px; }
@@ -358,7 +392,10 @@ body.mori-native .cbi-button,
 body.mori-native button,
 body.mori-native input[type="button"],
 body.mori-native input[type="submit"],
-body.mori-native input[type="reset"] {
+body.mori-native input[type="reset"],
+body.mori-native .cbi-button-find,
+body.mori-native .cbi-input-find,
+body.mori-native .cbi-value input[type="password"] + .cbi-button-neutral {
   min-height: 36px;
   height: auto;
   border: 1px solid var(--mori-border);
@@ -374,6 +411,7 @@ body.mori-native input[type="reset"] {
 body.mori-native .btn:hover,
 body.mori-native .cbi-button:hover,
 body.mori-native button:hover { background-color: var(--mori-tint); border-color: var(--mori-accent); }
+body.mori-native .btn.primary,
 body.mori-native .cbi-button-apply,
 body.mori-native .cbi-button-save,
 body.mori-native .cbi-button-action,
@@ -383,11 +421,15 @@ body.mori-native .cbi-button-download,
 body.mori-native .cbi-button-add,
 body.mori-native .cbi-button-edit,
 body.mori-native .cbi-button-reload,
+body.mori-native .cbi-input-apply,
+body.mori-native .cbi-input-save,
+body.mori-native .cbi-input-reload,
 body.mori-native .cbi-page-actions .cbi-button-apply,
 body.mori-native .cbi-section-actions .cbi-button-edit,
 body.mori-native .cbi-button[value="Submit"],
 body.mori-native .cbi-button[value="Upload"],
 body.mori-native .cbi-button[value$="Apply"] { color: var(--mori-on-accent) !important; background-color: var(--mori-accent); border-color: var(--mori-accent); }
+body.mori-native .btn.primary:hover,
 body.mori-native .cbi-button-apply:hover,
 body.mori-native .cbi-button-save:hover,
 body.mori-native .cbi-button-action:hover,
@@ -398,18 +440,25 @@ body.mori-native .btn.danger,
 body.mori-native .cbi-section-remove > .cbi-button,
 body.mori-native .cbi-button-remove,
 body.mori-native .cbi-button-reset,
+body.mori-native .cbi-input-remove,
 body.mori-native .cbi-button-negative,
 body.mori-native .cbi-button[value="Stop"],
 body.mori-native .cbi-button[value="Kill"],
+body.mori-native .cbi-button[value="Terminate"],
+body.mori-native .cbi-button[value="Reset"],
+body.mori-native .cbi-button[value="Disabled"],
 body.mori-native .cbi-button[onclick="reboot(this)"],
-body.mori-native .cbi-button-neutral[value="Restart"] { color: var(--mori-danger) !important; background-color: var(--mori-danger-bg); border-color: var(--mori-danger); }
+body.mori-native .cbi-button[onclick="handleReset(event)"],
+body.mori-native .cbi-button-neutral[value="Restart"],
+body.mori-native .cbi-button-neutral[value="Disable"] { color: var(--mori-danger) !important; background-color: var(--mori-danger-bg) !important; border-color: var(--mori-danger) !important; }
 body.mori-native .cbi-button-important,
-body.mori-native .cbi-button-warning { color: var(--mori-warning) !important; background-color: var(--mori-warning-bg); border-color: var(--mori-warning); }
+body.mori-native .cbi-button-warning,
+body.mori-native .cbi-button[onclick^="iface_reconnect"] { color: var(--mori-warning) !important; background-color: var(--mori-warning-bg); border-color: var(--mori-warning); }
 body.mori-native .cbi-button-neutral,
 body.mori-native .cbi-button-find,
-body.mori-native .cbi-button-link { color: var(--mori-text); background-color: var(--mori-panel); border-color: var(--mori-border); }
+body.mori-native .cbi-button-link { color: var(--mori-text) !important; background-color: var(--mori-panel); border-color: var(--mori-border); }
 body.mori-native .cbi-button-up,
-body.mori-native .cbi-button-down { color: var(--mori-text); background-color: var(--mori-panel); border-color: var(--mori-border); font-size: 0; min-width: 32px; }
+body.mori-native .cbi-button-down { color: transparent !important; background-color: var(--mori-panel) !important; border-color: var(--mori-border); font-size: 0; min-width: 32px; }
 body.mori-native .cbi-dropdown.cbi-button-apply,
 body.mori-native .cbi-dropdown.cbi-button-action,
 body.mori-native .cbi-dropdown.cbi-button-positive { padding: 0; }
@@ -425,6 +474,7 @@ body.mori-native table > tbody > tr > td,
 body.mori-native table > tbody > tr > th,
 body.mori-native table > thead > tr > th,
 body.mori-native table > tfoot > tr > td,
+body.mori-native table > tfoot > tr > th,
 body.mori-native .table > .tr > .td,
 body.mori-native .table > .tr > .th,
 body.mori-native .table > .tbody > .tr > .td,
@@ -432,10 +482,17 @@ body.mori-native .table > .thead > .tr > .th,
 body.mori-native .table > .tfoot > .tr > .td { padding: 11px 16px; border-color: var(--mori-border); line-height: 1.5; }
 body.mori-native table > thead > tr > th,
 body.mori-native .tr.table-titles > .th,
-body.mori-native .tr.cbi-section-table-titles > .th { background: var(--mori-bg); color: var(--mori-muted); font-weight: 500; font-size: 12px; }
+body.mori-native .tr.cbi-section-table-titles > .th { background: var(--mori-bg); color: var(--mori-muted); font-weight: 500; font-size: 12px; border-bottom-color: var(--mori-border); }
 body.mori-native .table[width="100%"] > .tr:first-child > .td,
 body.mori-native #cbi-wireless .td,
-body.mori-native[data-page="admin-network-diagnostics"] .tr > .td { background-color: transparent; }
+body.mori-native[data-page="admin-network-diagnostics"] .tr > .td { background-color: transparent; border-bottom-color: var(--mori-border); }
+body.mori-native div > table > tbody > tr:nth-of-type(2n),
+body.mori-native div > .table > .tr:nth-of-type(2n),
+body.mori-native div > .table > .tbody > .tr:nth-of-type(2n),
+body.mori-native fieldset > table > tbody > tr:nth-of-type(2n),
+body.mori-native .cbi-rowstyle-1,
+body.mori-native .cbi-rowstyle-2,
+body.mori-native:not([data-page="admin-network-network"]) .cbi-rowstyle-2:first-child { background-color: var(--mori-panel) !important; }
 body.mori-native .cbi-section-table-row { background: var(--mori-panel); box-shadow: none; }
 body.mori-native .cbi-section-table-row:hover { background-color: var(--mori-bg); }
 body.mori-native .tr[data-title]::before,
@@ -451,7 +508,9 @@ body.mori-native .cbi-section-table-row .cbi-value-description { font-size: 12px
 body.mori-native .ifacebox { border-radius: 10px; border-color: var(--mori-border); box-shadow: none; }
 body.mori-native .ifacebox-body { color: var(--mori-text); background: var(--mori-panel); }
 body.mori-native .ifacebadge { border-color: var(--mori-border); color: var(--mori-text); }
-body.mori-native .network-status-table .ifacebox-body .ifacebadge { background-color: var(--mori-bg); }
+body.mori-native .network-status-table .ifacebox-body .ifacebadge,
+body.mori-native .td > .ifacebadge,
+body.mori-native td > .ifacebadge { background-color: var(--mori-bg); color: var(--mori-text); }
 /* zonebadge and ifacebox-head intentionally retain generated zone colors. */
 
 /* Primary and secondary tabs. */
@@ -475,29 +534,31 @@ body.mori-native .tabs::-webkit-scrollbar-track,
 body.mori-native .cbi-tabmenu::-webkit-scrollbar-track { background: transparent; }
 
 /* Overlays, feedback and diagnostics. No visibility or positioning reset. */
+body.mori-native #view > .spinning { background: var(--mori-panel); box-shadow: none; }
 body.mori-native .modal,
-body.mori-native .modal.alert-message { color: var(--mori-text); background: var(--mori-panel); border: 1px solid var(--mori-border); border-radius: var(--mori-radius) !important; box-shadow: var(--mori-shadow); padding: 22px; }
-body.mori-native .modal > h4 { background: transparent; color: var(--mori-text); margin: -6px 0 10px; padding: 0 0 13px; border-bottom: 1px solid var(--mori-border); border-radius: 0; box-shadow: none; font-size: 18px; line-height: 1.5 !important; }
+body.mori-native .modal.alert-message { color: var(--mori-text); background: var(--mori-panel); border: 1px solid var(--mori-border); border-radius: var(--mori-radius); box-shadow: var(--mori-shadow); padding: 22px; }
+body.mori-native .modal > h4 { background: transparent; color: var(--mori-text); margin: -6px 0 10px; padding: 0 0 13px; border-bottom: 1px solid var(--mori-border); border-radius: 0; box-shadow: none; font-size: 18px; line-height: 1.5; }
 body.mori-native .modal p,
 body.mori-native .modal li { color: var(--mori-text); font-size: 14px; line-height: 1.6; }
 body.mori-native .modal > pre,
 body.mori-native .modal > textarea { background: var(--mori-bg); color: var(--mori-text); border-color: var(--mori-border); border-radius: 9px; font: 12px/1.6 ui-monospace, "Cascadia Code", Consolas, monospace; }
 body.mori-native .alert,
-body.mori-native .alert-message { color: var(--mori-text); background: var(--mori-panel); border: 1px solid var(--mori-border); border-radius: 11px !important; box-shadow: none; font-weight: 400; font-size: 13px; line-height: 1.6; }
+body.mori-native .alert-message { color: var(--mori-text); background: var(--mori-panel); border: 1px solid var(--mori-border); border-radius: 11px; box-shadow: none; font-weight: 400; font-size: 13px; line-height: 1.6; }
 body.mori-native .alert.warning,
-body.mori-native .alert-message.warning { color: var(--mori-warning); background: var(--mori-warning-bg); border-color: var(--mori-warning); }
+body.mori-native .alert-message.warning { color: var(--mori-warning); background: var(--mori-warning-bg) !important; border-color: var(--mori-warning); }
 body.mori-native .alert.error,
 body.mori-native .alert-message.error,
 body.mori-native .alert.danger,
-body.mori-native .alert-message.danger { color: var(--mori-danger); background: var(--mori-danger-bg); border-color: var(--mori-danger); }
+body.mori-native .alert-message.danger { color: var(--mori-danger); background: var(--mori-danger-bg) !important; border-color: var(--mori-danger); }
 body.mori-native .alert.notice,
 body.mori-native .alert-message.notice,
 body.mori-native .alert.info,
-body.mori-native .alert-message.info { color: var(--mori-info); background: var(--mori-info-bg); border-color: var(--mori-info); }
+body.mori-native .alert-message.info { color: var(--mori-info); background: var(--mori-info-bg) !important; border-color: var(--mori-info); }
 body.mori-native .alert.success,
-body.mori-native .alert-message.success { color: var(--mori-accent); background: var(--mori-tint); border-color: var(--mori-accent); }
+body.mori-native .alert-message.success { color: var(--mori-accent); background: var(--mori-tint) !important; border-color: var(--mori-accent); }
 body.mori-native .alert h4,
 body.mori-native .alert-message h4 { color: inherit; background: transparent; }
+body.mori-native :is(.alert, .alert-message) :is(p, li) { color: inherit; }
 body.mori-native .cbi-progressbar { height: 18px; border: 0; border-radius: 6px; background: var(--mori-border); }
 body.mori-native .cbi-progressbar > div { background-color: var(--mori-accent); border-radius: 6px; opacity: .55; }
 body.mori-native .cbi-progressbar::after { color: var(--mori-text); font-size: 11px; line-height: 18px; }
@@ -511,14 +572,11 @@ body.mori-native #syslog,
 body.mori-native #logview,
 body.mori-native #diag-rc-output > pre,
 body.mori-native #command-rc-output > pre { background: var(--mori-panel); color: var(--mori-text); border: 1px solid var(--mori-border); border-radius: 10px; padding: 14px; font: 12px/1.65 ui-monospace, "Cascadia Code", Consolas, monospace; }
-body.mori-native[data-page="admin-network-diagnostics"] .cbi-section { background: var(--mori-panel) !important; }
-body.mori-native[data-page^="admin-system-admin"]:not(.node-main-login) .cbi-map:not(#cbi-dropbear) { background: var(--mori-panel); border: 1px solid var(--mori-border); border-radius: var(--mori-radius); box-shadow: none; }
-body.mori-native[data-page="admin-system-opkg"] #maincontent > .container { background: transparent; border: 0; box-shadow: none; }
+body.mori-native[data-page="admin-network-diagnostics"] .cbi-section { background: var(--mori-panel); }
 
 /* Login is independent of the authenticated-page whitelist. */
-body.mori-login { --primary: var(--mori-accent); color: var(--mori-text); font: 14px/1.6 var(--mori-font); background: var(--mori-bg); }
+body.mori-login { color: var(--mori-text); font: 14px/1.6 var(--mori-font); background: var(--mori-bg); }
 body.mori-login .login-page { align-items: center; justify-content: center; min-height: 100vh; min-height: 100dvh; height: auto; padding: 32px 18px; }
-body.mori-login .login-page .video,
 body.mori-login .login-page .main-bg { background: var(--mori-bg); }
 body.mori-login .login-page .login-container {
   width: min(100%, 420px);
@@ -526,27 +584,209 @@ body.mori-login .login-page .login-container {
   margin: 0;
   border: 1px solid var(--mori-border);
   border-radius: 22px;
-  background: var(--mori-panel) !important;
+  background: var(--mori-panel);
   box-shadow: 0 12px 42px rgba(31, 52, 40, .08);
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
 }
-body.mori-login .login-page .login-container .login-form { position: relative; width: 100%; height: auto; min-height: 0 !important; padding: 38px 32px 28px; }
+body.mori-login .login-page .login-container .login-form { position: relative; width: 100%; height: auto; min-height: 0; padding: 38px 32px 28px; }
 body.mori-login .login-page .login-container .login-form .brand { margin: 0 0 30px; color: var(--mori-text); gap: 11px; font-family: var(--mori-font); }
 body.mori-login .login-page .login-container .login-form .brand .brand-text { margin: 0; color: var(--mori-text); font: 600 23px/1.4 var(--mori-font); }
 body.mori-login .login-page .login-container .login-form .brand .icon { width: 40px; margin-right: 0; }
+body.mori-login .mori-login-subtitle { margin: -12px 0 24px; color: var(--mori-muted); font-size: 13px; }
 body.mori-login .login-page .login-container .login-form .form-login { width: 100%; padding: 0; }
 body.mori-login .login-page .login-container .login-form .form-login .input-group { margin-bottom: 18px; }
 body.mori-login .login-page .login-container .login-form .form-login .input-group::before { color: var(--mori-muted); }
 body.mori-login .login-page .login-container .login-form .form-login .input-group input { height: 44px; color: var(--mori-text); border: 1px solid var(--mori-border); border-radius: 9px; background: var(--mori-bg); font: 14px/1.5 var(--mori-font); }
 body.mori-login .login-page .login-container .login-form .form-login input:focus-visible { border-color: var(--mori-accent); outline: 2px solid var(--mori-accent); outline-offset: 2px; box-shadow: none; }
 body.mori-login .login-page .login-container .login-form .form-login input[type="submit"],
-body.mori-login .login-page .login-container .login-form .form-login button[type="submit"] { width: 100%; min-height: 44px; border: 1px solid var(--mori-accent); border-radius: 9px; background: var(--mori-accent); color: var(--mori-on-accent); box-shadow: none; font: 500 14px/1.5 var(--mori-font); }
-body.mori-login .login-page .login-container .login-form .cbi-button-apply { margin: 10px 0 0; padding: 10px 12px; letter-spacing: .06em; background-color: var(--mori-accent) !important; color: var(--mori-on-accent); }
+body.mori-login .login-page .login-container .login-form .form-login button[type="submit"],
+body.mori-login .login-page .login-container .login-form .cbi-button-apply { width: 100%; min-height: 44px; margin: 10px 0 0; padding: 10px 12px; letter-spacing: .06em; border: 1px solid var(--mori-accent); border-radius: 9px; background: var(--mori-accent); color: var(--mori-on-accent) !important; box-shadow: none; font: 500 14px/1.5 var(--mori-font); }
 body.mori-login .login-page .login-container .login-form .form-login .errorbox { color: var(--mori-danger); font-size: 13px; }
 body.mori-login .login-page .login-container footer { position: relative; bottom: auto; padding: 0 25px 25px; color: var(--mori-muted); font: 12px/1.6 var(--mori-font); white-space: normal; }
-body.mori-login .login-page .login-container footer .ftc { position: static; }
 body.mori-login .login-page .login-container footer a { color: var(--mori-muted); }
+
+/* Respect LuCI's conditional fields even where a component has a layout rule. */
+body.mori-native [hidden],
+body.mori-login [hidden] { display: none !important; }
+
+/* The application scrollport is shared; nested scrollports are themed only
+ * on native pages. No inherited scrollbar color leaks into plugin content. */
+body.mori-modern .main > .main-right::-webkit-scrollbar,
+body.mori-native #maincontent::-webkit-scrollbar,
+body.mori-native #maincontent ::-webkit-scrollbar,
+body.mori-native #modal_overlay::-webkit-scrollbar,
+body.mori-native #modal_overlay ::-webkit-scrollbar { width: 7px; height: 7px; }
+body.mori-modern .main > .main-right::-webkit-scrollbar-track,
+body.mori-native #maincontent::-webkit-scrollbar-track,
+body.mori-native #maincontent ::-webkit-scrollbar-track,
+body.mori-native #modal_overlay::-webkit-scrollbar-track,
+body.mori-native #modal_overlay ::-webkit-scrollbar-track,
+body.mori-modern .main > .main-right::-webkit-scrollbar-corner,
+body.mori-native #maincontent ::-webkit-scrollbar-corner,
+body.mori-native #modal_overlay ::-webkit-scrollbar-corner { background: transparent; }
+body.mori-modern .main > .main-right::-webkit-scrollbar-thumb,
+body.mori-native #maincontent::-webkit-scrollbar-thumb,
+body.mori-native #maincontent ::-webkit-scrollbar-thumb,
+body.mori-native #modal_overlay::-webkit-scrollbar-thumb,
+body.mori-native #modal_overlay ::-webkit-scrollbar-thumb { background: var(--mori-border); border-radius: 7px; }
+body.mori-modern .main > .main-right::-webkit-scrollbar-thumb:hover,
+body.mori-modern .main > .main-right::-webkit-scrollbar-thumb:active,
+body.mori-native #maincontent::-webkit-scrollbar-thumb:hover,
+body.mori-native #maincontent::-webkit-scrollbar-thumb:active,
+body.mori-native #maincontent ::-webkit-scrollbar-thumb:hover,
+body.mori-native #maincontent ::-webkit-scrollbar-thumb:active,
+body.mori-native #modal_overlay::-webkit-scrollbar-thumb:hover,
+body.mori-native #modal_overlay::-webkit-scrollbar-thumb:active,
+body.mori-native #modal_overlay ::-webkit-scrollbar-thumb:hover,
+body.mori-native #modal_overlay ::-webkit-scrollbar-thumb:active { background: var(--mori-muted); }
+
+/* Stock realtime SVGs carry fixed inline colors; match their existing legends. */
+body.mori-native[data-page^="admin-status-realtime"] #maincontent svg text {
+  fill: var(--mori-muted) !important; text-shadow: none !important; font-family: var(--mori-font) !important;
+}
+body.mori-native[data-page^="admin-status-realtime"] #maincontent svg line { stroke: var(--mori-border) !important; stroke-width: 1 !important; }
+body.mori-native[data-page^="admin-status-realtime"] #maincontent svg polyline { fill-opacity: .12 !important; stroke-width: 1.8 !important; }
+body.mori-native[data-page^="admin-status-realtime"] svg :is(#rx, #udp, #load01) { stroke: var(--mori-accent) !important; fill: var(--mori-accent) !important; }
+body.mori-native[data-page^="admin-status-realtime"] svg :is(#tx, #tcp, #load05) { stroke: var(--mori-info) !important; fill: var(--mori-info) !important; }
+body.mori-native[data-page^="admin-status-realtime"] svg :is(#other, #load15) { stroke: var(--mori-warning) !important; fill: var(--mori-warning) !important; }
+body.mori-native[data-page^="admin-status-realtime"] strong:is([style*="blue"], [style*="#f00"]) { border-bottom-color: var(--mori-accent) !important; }
+body.mori-native[data-page^="admin-status-realtime"] strong:is([style*="green"], [style*="#f60"]) { border-bottom-color: var(--mori-info) !important; }
+body.mori-native[data-page^="admin-status-realtime"] strong:is([style*="red"], [style*="#fa0"]) { border-bottom-color: var(--mori-warning) !important; }
+
+/* Dynamic-list actions are compact, separate controls. Preserve LuCI's
+ * pseudo-element removal target and native event/disabled handling. */
+html[data-mori-theme] body.mori-native {
+  --mori-dyn-add-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M8 2v12M2 8h12' fill='none' stroke='%2327634c' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E");
+  --mori-dyn-remove-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='m3 3 10 10M13 3 3 13' fill='none' stroke='%23627168' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E");
+  --mori-dyn-remove-hover-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='m3 3 10 10M13 3 3 13' fill='none' stroke='%23a73139' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E");
+}
+html[data-mori-theme] body.mori-native .cbi-dynlist {
+  width: 280px;
+  min-width: 0;
+  max-width: 100%;
+}
+html[data-mori-theme] body.mori-native .cbi-dynlist > .item,
+html[data-mori-theme] body.mori-native .cbi-dynlist > .add-item {
+  gap: 8px !important;
+  align-items: flex-start;
+  min-width: 0;
+  max-width: 100%;
+}
+html[data-mori-theme] body.mori-native .cbi-dynlist > .item {
+  padding: 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+html[data-mori-theme] body.mori-native .cbi-dynlist > .item > span {
+  flex: 1 1 0;
+  min-width: 0;
+  width: auto;
+  height: auto;
+  min-height: 38px;
+  padding: 8px 12px;
+  border: 1px solid var(--mori-border);
+  border-radius: 8px;
+  background: var(--mori-tint);
+  color: var(--mori-text);
+  line-height: 20px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+html[data-mori-theme] body.mori-native .cbi-dynlist > .add-item > input {
+  flex: 1 1 0;
+  min-width: 0;
+  width: 0;
+  max-width: 100%;
+  border-radius: 8px;
+  border-right-width: 1px;
+}
+html[data-mori-theme] body.mori-native .cbi-dynlist > .item::after,
+html[data-mori-theme] body.mori-native .cbi-dynlist > .add-item > .cbi-button-add {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  box-sizing: border-box;
+  flex: 0 0 38px;
+  width: 38px !important;
+  min-width: 38px;
+  max-width: 38px;
+  height: 38px;
+  min-height: 38px;
+  margin: 0;
+  padding: 0 !important;
+  border: 1px solid var(--mori-border);
+  border-radius: 8px;
+  background-color: var(--mori-panel);
+  background-image: var(--mori-dyn-remove-icon);
+  background-position: center;
+  background-size: 16px 16px;
+  background-repeat: no-repeat;
+  color: var(--mori-muted);
+  font-size: 0 !important;
+  line-height: 1;
+  text-shadow: none;
+  box-shadow: none;
+  cursor: pointer;
+  transition: background-color .12s ease, border-color .12s ease, color .12s ease;
+}
+html[data-mori-theme] body.mori-native .cbi-dynlist > .add-item > .cbi-button-add {
+  background-color: var(--mori-tint);
+  background-image: var(--mori-dyn-add-icon);
+  color: var(--mori-accent) !important;
+}
+html[data-mori-theme] body.mori-native .cbi-dynlist > .add-item > .cbi-button-add:hover {
+  border-color: var(--mori-accent);
+}
+html[data-mori-theme] body.mori-native .cbi-dynlist > .item:hover::after {
+  background-color: var(--mori-danger-bg);
+  background-image: var(--mori-dyn-remove-hover-icon);
+  border-color: var(--mori-danger);
+  color: var(--mori-danger);
+}
+html[data-mori-theme] body.mori-native .cbi-dynlist > .item:focus-visible::after,
+html[data-mori-theme] body.mori-native .cbi-dynlist > .add-item > .cbi-button-add:focus-visible {
+  outline: 2px solid var(--mori-accent);
+  outline-offset: 2px;
+}
+
+/* Dark-mode specific graphical adjustments (icons, firewall zones, UCI diff). */
+html[data-mori-theme="dark"] .spinning::before { filter: invert(1); }
+html[data-mori-theme="dark"] body.mori-native input[type="checkbox"]:checked {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%23152e20' d='M6.564.75l-3.59 3.612-1.538-1.55L0 4.26 2.974 7.25 8 2.193z'/%3e%3c/svg%3e") !important;
+}
+html[data-mori-theme="dark"] body.mori-native {
+  --mori-dyn-add-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M8 2v12M2 8h12' fill='none' stroke='%239ed0b4' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E");
+  --mori-dyn-remove-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='m3 3 10 10M13 3 3 13' fill='none' stroke='%23a2b2a8' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E");
+  --mori-dyn-remove-hover-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='m3 3 10 10M13 3 3 13' fill='none' stroke='%23f1a7ab' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E");
+}
+html[data-mori-theme="dark"] .uci-dialog .cbi-section .uci-change-legend .uci-change-legend-label > ins,
+html[data-mori-theme="dark"] .uci-dialog .cbi-section .uci-change-list > ins { border-color: #3a8f5e; background-color: #214030; }
+html[data-mori-theme="dark"] .uci-dialog .cbi-section .uci-change-legend .uci-change-legend-label > del,
+html[data-mori-theme="dark"] .uci-dialog .cbi-section .uci-change-list > del { border-color: #a73139; background-color: #42272c; }
+html[data-mori-theme="dark"] .uci-dialog .cbi-section .uci-change-legend .uci-change-legend-label > var,
+html[data-mori-theme="dark"] .uci-dialog .cbi-section .uci-change-list > var { background-color: var(--mori-bg); border-color: var(--mori-border); }
+html[data-mori-theme="dark"] .uci-dialog .cbi-section .uci-change-legend .uci-change-legend-label > var ins,
+html[data-mori-theme="dark"] .uci-dialog .cbi-section .uci-change-list > var ins { background-color: #214030; }
+html[data-mori-theme="dark"] .uci-dialog .cbi-section .uci-change-legend .uci-change-legend-label > var del,
+html[data-mori-theme="dark"] .uci-dialog .cbi-section .uci-change-list > var del { background-color: #42272c; }
+html[data-mori-theme="dark"] [data-page="admin-network-network"] .ifacebox-head[style*="--zone-color-rgb: 144, 240, 144"] { background-color: #497e49 !important; color: var(--mori-text) !important; }
+html[data-mori-theme="dark"] [data-page="admin-network-network"] .ifacebox-head[style*="--zone-color-rgb: 240, 144, 144"] { background-color: #9c4f4f !important; color: var(--mori-text) !important; }
+html[data-mori-theme="dark"] [data-page="admin-network-network"] .ifacebox-head[style*="--zone-color-rgb: 238, 238, 238"] { background-color: #555 !important; }
+html[data-mori-theme="dark"] [data-page="admin-network-network"] .cbi-dropdown .zonebadge[style*="--zone-color-rgb:144, 240, 144"],
+html[data-mori-theme="dark"] [data-page="admin-network-firewall-rules"] .cbi-dropdown .zonebadge[style*="--zone-color-rgb:144, 240, 144"] { --zone-color-rgb: 73, 126, 73 !important; color: var(--mori-text) !important; }
+html[data-mori-theme="dark"] [data-page="admin-network-network"] .cbi-dropdown .zonebadge[style*="--zone-color-rgb:240, 144, 144"],
+html[data-mori-theme="dark"] [data-page="admin-network-firewall-rules"] .cbi-dropdown .zonebadge[style*="--zone-color-rgb:240, 144, 144"],
+html[data-mori-theme="dark"] [data-page="admin-network-firewall-rules"] #cbi-firewall-rule .zonebadge[style*="--zone-color-rgb:240, 144, 144"] { --zone-color-rgb: 156, 79, 79 !important; color: var(--mori-text) !important; }
+html[data-mori-theme="dark"] [data-page="admin-network-network"] .cbi-dropdown .zonebadge[style*="--zone-color-rgb:238, 238, 238"],
+html[data-mori-theme="dark"] [data-page="admin-network-firewall-rules"] .cbi-dropdown .zonebadge[style*="--zone-color-rgb:238, 238, 238"],
+html[data-mori-theme="dark"] [data-page="admin-network-firewall-rules"] #cbi-firewall-rule .zonebadge[style*="--zone-color-rgb:238, 238, 238"] { --zone-color-rgb: 112, 112, 112 !important; color: var(--mori-text) !important; }
+html[data-mori-theme="dark"] [data-page="admin-network-network"] .cbi-dropdown .zonebadge :is(strong, em, span),
+html[data-mori-theme="dark"] [data-page="admin-network-firewall-rules"] .zonebadge :is(strong, em, span) { color: var(--mori-text) !important; }
+html[data-mori-theme="dark"] [data-page="admin-system-fileassistant"] .fb-container td[class$="-icon"]::before { filter: invert(.7); }
+html[data-mori-theme="dark"] [data-page^="admin-services-openclash"] img[src$="arrow-clockwise-light.svg"],
+html[data-mori-theme="dark"] [data-page^="admin-services-openclash"] img[src$="wrench-light.svg"],
+html[data-mori-theme="dark"] [data-page^="admin-services-openclash"] img[src$="eye-light.svg"] { filter: invert(.9); }
 
 @media (max-width: 1152px) {
   body.mori-modern .main > .main-left { width: 208px; }
@@ -558,6 +798,10 @@ body.mori-login .login-page .login-container footer a { color: var(--mori-muted)
   body.mori-native .table .tr > .th { padding: 10px 14px; }
   body.mori-modern .mori-stat { padding-left: 16px; padding-right: 16px; }
   body.mori-modern .mori-stat-value { font-size: 24px; }
+}
+@media (max-width: 850px) {
+  body.mori-native.mori-overview #view { grid-template-columns: minmax(0, 1fr); }
+  body.mori-modern .mori-stat[data-mori-stat="uptime"] .mori-stat-value { font-size: 20px; }
 }
 @media (max-width: 768px) {
   body.mori-modern .main > .main-left { position: fixed; top: 0; bottom: 0; left: 0; width: 0; height: 100%; z-index: 100; border-right-width: 0; }
@@ -608,321 +852,7 @@ body.mori-login .login-page .login-container footer a { color: var(--mori-muted)
   body.mori-modern .mori-theme-toggle { padding-left: 8px; padding-right: 8px; }
   body.mori-login .login-page .login-container .login-form { padding: 32px 24px 24px; }
   body.mori-login .login-page .login-container footer { display: block; }
-}
-@media (prefers-reduced-motion: reduce) {
-  body.mori-modern .main-left,
-  body.mori-modern .main-left .nav a,
-  body.mori-modern .main-left .nav li .menu,
-  body.mori-native .cbi-button,
-  body.mori-native .btn,
-  body.mori-native .cbi-progressbar > div { transition: none; }
-}
-/* Respect LuCI's conditional fields even where a component has a layout rule. */
-body.mori-native [hidden],
-body.mori-login [hidden] { display: none !important; }
-
-/* Integration with the router's stock status view; source blocks stay intact. */
-body.mori-modern .main-left .nav { order: 1; }
-body.mori-modern .mori-sidebar-footer { order: 2; }
-body.mori-modern .mori-topbar-title > span::before { content: " / "; margin: 0 10px; color: var(--mori-border); }
-body.mori-modern .mori-stat-note { display: block; margin-top: 7px; color: var(--mori-muted); font-size: 12px; line-height: 1.5; overflow-wrap: anywhere; }
-body.mori-modern .mori-stat[data-mori-stat="uptime"] .mori-stat-value { font-size: 22px; line-height: 1.5; }
-body.mori-modern .mori-page-intro { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-body.mori-modern .mori-page-intro p { margin: 0; }
-body.mori-modern .mori-overview-link { color: var(--mori-accent); font-size: 13px; text-decoration: none; }
-body.mori-native.mori-overview #maincontent > .container > h2 { margin: 0; padding: 0; background: transparent; border-radius: 0; font-size: 28px; }
-body.mori-native.mori-overview #view { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 20px; }
-body.mori-native.mori-overview #view > .cbi-section { min-width: 0; margin: 0; }
-body.mori-native.mori-overview #view > .cbi-section:not([data-mori-section="memory"]):not([data-mori-section="storage"]) { grid-column: 1 / -1; }
-body.mori-login .mori-login-subtitle { margin: -12px 0 24px; color: var(--mori-muted); font-size: 13px; }
-@media (max-width: 850px) {
- body.mori-native.mori-overview #view { grid-template-columns: minmax(0,1fr); }
- body.mori-modern .mori-stat[data-mori-stat="uptime"] .mori-stat-value { font-size: 20px; }
-}
-
-/* Argon dark.css contains important declarations. Override only their known
- * shell/native targets; never flatten generated firewall-zone colors. */
-html[data-mori-theme="dark"] body.mori-modern .main .main-left {
-  background-color: var(--mori-side) !important;
-  box-shadow: none;
-}
-html[data-mori-theme="dark"] body.mori-modern .main .main-left .nav li a {
-  color: var(--mori-muted) !important;
-}
-html[data-mori-theme="dark"] body.mori-modern .main .main-left .nav > li > a:first-child.active,
-html[data-mori-theme="dark"] body.mori-modern .main .main-left .nav .slide > .menu.active {
-  background-color: var(--mori-panel) !important;
-  color: var(--mori-accent) !important;
-}
-html[data-mori-theme="dark"] body.mori-modern .main .main-left .nav li a:hover,
-html[data-mori-theme="dark"] body.mori-modern .main .main-left .nav .slide .slide-menu li a:hover {
-  background-color: var(--mori-tint) !important;
-  color: var(--mori-text) !important;
-}
-html[data-mori-theme="dark"] body.mori-modern .main .main-left .nav .slide .slide-menu li.active > a,
-html[data-mori-theme="dark"] body.mori-modern .main .main-left .nav .slide .slide-menu a.active {
-  background-color: var(--mori-tint) !important;
-  color: var(--mori-accent) !important;
-}
-html[data-mori-theme="dark"] body.mori-modern .main .main-left .nav .slide .slide-menu li::after,
-html[data-mori-theme="dark"] body.mori-modern .main .main-left .nav .slide .slide-menu li a::after {
-  content: none;
-}
-html[data-mori-theme="dark"] body.mori-modern .main .main-left::-webkit-scrollbar-thumb {
-  background-color: var(--mori-border) !important;
-}
-html[data-mori-theme="dark"] body.mori-modern .main .main-left::-webkit-scrollbar-track {
-  background-color: transparent;
-}
-html[data-mori-theme="dark"] body.mori-modern .main-right > header .fill .status span[data-style="active"],
-html[data-mori-theme="dark"] body.mori-modern #xhr_poll_status > .label.success {
-  background-color: var(--mori-tint) !important;
-  color: var(--mori-accent) !important;
-}
-html[data-mori-theme="dark"] body.mori-modern .mori-theme-toggle {
-  border-color: var(--mori-border) !important;
-  color: var(--mori-text);
-  background-color: var(--mori-panel);
-}
-html[data-mori-theme="dark"] body.mori-native .cbi-section,
-html[data-mori-theme="dark"] body.mori-native .cbi-section-error,
-html[data-mori-theme="dark"] body.mori-native #iptables,
-html[data-mori-theme="dark"] body.mori-native .Firewall form,
-html[data-mori-theme="dark"] body.mori-native #cbi-network > .cbi-section-node,
-html[data-mori-theme="dark"] body.mori-native #cbi-wireless > .cbi-section-node,
-html[data-mori-theme="dark"] body.mori-native #cbi-wireless > #wifi_assoclist_table,
-html[data-mori-theme="dark"] body.mori-native [data-tab-title],
-html[data-mori-theme="dark"] body.mori-native[data-page^="admin-system-admin"]:not(.node-main-login) .cbi-map:not(#cbi-dropbear) {
-  background: var(--mori-panel) !important;
-  box-shadow: none;
-}
-html[data-mori-theme="dark"] body.mori-native .cbi-section .cbi-section,
-html[data-mori-theme="dark"] body.mori-native .cbi-modal .cbi-section,
-html[data-mori-theme="dark"] body.mori-native fieldset > fieldset,
-html[data-mori-theme="dark"] body.mori-native[data-page="admin-system-opkg"] #maincontent > .container {
-  background: transparent !important;
-}
-html[data-mori-theme="dark"] body.mori-native div > table > tbody > tr:nth-of-type(2n),
-html[data-mori-theme="dark"] body.mori-native div > .table > .tr:nth-of-type(2n),
-html[data-mori-theme="dark"] body.mori-native div > .table > .tbody > .tr:nth-of-type(2n),
-html[data-mori-theme="dark"] body.mori-native fieldset > table > tbody > tr:nth-of-type(2n),
-html[data-mori-theme="dark"] body.mori-native .cbi-rowstyle-1,
-html[data-mori-theme="dark"] body.mori-native .cbi-rowstyle-2 { background-color: var(--mori-panel); }
-html[data-mori-theme="dark"] body.mori-native .cbi-section-table-row,
-html[data-mori-theme="dark"] body.mori-native:not(.Interfaces) .cbi-rowstyle-2:first-child {
-  background-color: var(--mori-panel) !important;
-}
-html[data-mori-theme="dark"] body.mori-native .cbi-section-table-row:hover { background-color: var(--mori-bg) !important; }
-html[data-mori-theme="dark"] body.mori-native table > tbody > tr > th,
-html[data-mori-theme="dark"] body.mori-native table > tfoot > tr > th,
-html[data-mori-theme="dark"] body.mori-native table > thead > tr > th,
-html[data-mori-theme="dark"] body.mori-native #cbi-wireless .td,
-html[data-mori-theme="dark"] body.mori-native #cbi-network .tr:first-child > .td,
-html[data-mori-theme="dark"] body.mori-native .table[width="100%"] > .tr:first-child > .td,
-html[data-mori-theme="dark"] body.mori-native .tr.table-titles > .th,
-html[data-mori-theme="dark"] body.mori-native .tr.cbi-section-table-titles > .th {
-  border-bottom-color: var(--mori-border) !important;
-}
-html[data-mori-theme="dark"] body.mori-native[data-page="admin-network-diagnostics"] .tr > .td { background-color: transparent !important; }
-html[data-mori-theme="dark"] body.mori-native #view > .spinning {
-  background: var(--mori-panel) !important;
-  box-shadow: none !important;
-}
-
-/* Controls neutralize the legacy universal input border, then semantic button
- * variants restore their own foreground/background pairs below. */
-html[data-mori-theme="dark"] body.mori-native .btn,
-html[data-mori-theme="dark"] body.mori-native button,
-html[data-mori-theme="dark"] body.mori-native select,
-html[data-mori-theme="dark"] body.mori-native input,
-html[data-mori-theme="dark"] body.mori-native .cbi-dropdown,
-html[data-mori-theme="dark"] body.mori-native .cbi-input-textarea {
-  border-color: var(--mori-border) !important;
-}
-html[data-mori-theme="dark"] body.mori-native input[type="text"],
-html[data-mori-theme="dark"] body.mori-native input[type="password"],
-html[data-mori-theme="dark"] body.mori-native input[type="number"],
-html[data-mori-theme="dark"] body.mori-native input[type="search"],
-html[data-mori-theme="dark"] body.mori-native input[type="url"],
-html[data-mori-theme="dark"] body.mori-native input[type="email"],
-html[data-mori-theme="dark"] body.mori-native input[type="date"],
-html[data-mori-theme="dark"] body.mori-native input[type="time"],
-html[data-mori-theme="dark"] body.mori-native select { background-color: var(--mori-bg) !important; }
-html[data-mori-theme="dark"] body.mori-native input:not(.cbi-button):focus,
-html[data-mori-theme="dark"] body.mori-native select:focus,
-html[data-mori-theme="dark"] body.mori-native textarea:focus,
-html[data-mori-theme="dark"] body.mori-native .cbi-dropdown:focus,
-html[data-mori-theme="dark"] body.mori-native .cbi-dropdown[open] { border-color: var(--mori-accent) !important; }
-html[data-mori-theme="dark"] body.mori-native input[type="checkbox"]:checked {
-  background-color: var(--mori-accent) !important;
-  border-color: var(--mori-accent) !important;
-}
-html[data-mori-theme="dark"] body.mori-native input.cbi-input-invalid,
-html[data-mori-theme="dark"] body.mori-native textarea.cbi-input-invalid,
-html[data-mori-theme="dark"] body.mori-native select.cbi-input-invalid,
-html[data-mori-theme="dark"] body.mori-native .cbi-dropdown.cbi-input-invalid { border-color: var(--mori-danger) !important; }
-html[data-mori-theme="dark"] body.mori-native .btn,
-html[data-mori-theme="dark"] body.mori-native .cbi-button,
-html[data-mori-theme="dark"] body.mori-native button,
-html[data-mori-theme="dark"] body.mori-native input[type="button"],
-html[data-mori-theme="dark"] body.mori-native input[type="submit"],
-html[data-mori-theme="dark"] body.mori-native input[type="reset"],
-html[data-mori-theme="dark"] body.mori-native .cbi-button-find,
-html[data-mori-theme="dark"] body.mori-native .cbi-input-find,
-html[data-mori-theme="dark"] body.mori-native .cbi-value input[type="password"] + .cbi-button-neutral {
-  background-color: var(--mori-panel) !important;
-  border-color: var(--mori-border) !important;
-  color: var(--mori-text) !important;
-}
-html[data-mori-theme="dark"] body.mori-native .btn:hover,
-html[data-mori-theme="dark"] body.mori-native .cbi-button:hover,
-html[data-mori-theme="dark"] body.mori-native button:hover { background-color: var(--mori-tint) !important; }
-html[data-mori-theme="dark"] body.mori-native .cbi-button-apply,
-html[data-mori-theme="dark"] body.mori-native .cbi-button-save,
-html[data-mori-theme="dark"] body.mori-native .cbi-button-action,
-html[data-mori-theme="dark"] body.mori-native .cbi-button-positive,
-html[data-mori-theme="dark"] body.mori-native .cbi-button-success,
-html[data-mori-theme="dark"] body.mori-native .cbi-button-download,
-html[data-mori-theme="dark"] body.mori-native .cbi-button-add,
-html[data-mori-theme="dark"] body.mori-native .cbi-button-edit,
-html[data-mori-theme="dark"] body.mori-native .cbi-button-reload,
-html[data-mori-theme="dark"] body.mori-native .cbi-input-apply,
-html[data-mori-theme="dark"] body.mori-native .cbi-input-save,
-html[data-mori-theme="dark"] body.mori-native .cbi-input-reload,
-html[data-mori-theme="dark"] body.mori-native .cbi-button[value="Submit"],
-html[data-mori-theme="dark"] body.mori-native .cbi-button[value="Upload"],
-html[data-mori-theme="dark"] body.mori-native .cbi-button[value$="Apply"] {
-  background-color: var(--mori-accent) !important;
-  border-color: var(--mori-accent) !important;
-  color: var(--mori-on-accent) !important;
-}
-html[data-mori-theme="dark"] body.mori-native .btn.danger,
-html[data-mori-theme="dark"] body.mori-native .cbi-section-remove > .cbi-button,
-html[data-mori-theme="dark"] body.mori-native .cbi-button-remove,
-html[data-mori-theme="dark"] body.mori-native .cbi-button-reset,
-html[data-mori-theme="dark"] body.mori-native .cbi-input-remove,
-html[data-mori-theme="dark"] body.mori-native .cbi-button-negative,
-html[data-mori-theme="dark"] body.mori-native .cbi-button[value="Stop"],
-html[data-mori-theme="dark"] body.mori-native .cbi-button[value="Kill"],
-html[data-mori-theme="dark"] body.mori-native .cbi-button[value="Terminate"],
-html[data-mori-theme="dark"] body.mori-native .cbi-button[value="Reset"],
-html[data-mori-theme="dark"] body.mori-native .cbi-button[value="Disabled"],
-html[data-mori-theme="dark"] body.mori-native .cbi-button[onclick="reboot(this)"],
-html[data-mori-theme="dark"] body.mori-native .cbi-button[onclick="handleReset(event)"],
-html[data-mori-theme="dark"] body.mori-native .cbi-button-neutral[value="Restart"],
-html[data-mori-theme="dark"] body.mori-native .cbi-button-neutral[value="Disable"] {
-  background-color: var(--mori-danger-bg) !important;
-  border-color: var(--mori-danger) !important;
-  color: var(--mori-danger) !important;
-}
-html[data-mori-theme="dark"] body.mori-native .cbi-button-important,
-html[data-mori-theme="dark"] body.mori-native .cbi-button-warning,
-html[data-mori-theme="dark"] body.mori-native .cbi-button[onclick^="iface_reconnect"] {
-  background-color: var(--mori-warning-bg) !important;
-  border-color: var(--mori-warning) !important;
-  color: var(--mori-warning) !important;
-}
-html[data-mori-theme="dark"] body.mori-native .cbi-button-up,
-html[data-mori-theme="dark"] body.mori-native .cbi-button-down {
-  background-color: var(--mori-panel) !important;
-  border-color: var(--mori-border) !important;
-  color: transparent !important;
-}
-html[data-mori-theme="dark"] body.mori-native .cbi-dropdown[open] > ul.dropdown {
-  background: var(--mori-panel) !important;
-  color: var(--mori-text) !important;
-  border-color: var(--mori-border) !important;
-  box-shadow: var(--mori-shadow);
-}
-html[data-mori-theme="dark"] body.mori-native .cbi-dropdown[open] > ul.dropdown > li {
-  color: var(--mori-text);
-  border-bottom-color: var(--mori-border) !important;
-}
-html[data-mori-theme="dark"] body.mori-native .cbi-dropdown[open] > ul.dropdown > li[selected],
-html[data-mori-theme="dark"] body.mori-native .cbi-dropdown[open] > ul.dropdown > li.focus {
-  background-color: var(--mori-tint) !important;
-  color: var(--mori-text);
-}
-html[data-mori-theme="dark"] body.mori-native .cbi-dynlist > .item > span { border-color: var(--mori-border) !important; }
-html[data-mori-theme="dark"] body.mori-native .tabs li.active a,
-html[data-mori-theme="dark"] body.mori-native .tabs li:hover a { color: var(--mori-accent) !important; }
-html[data-mori-theme="dark"] body.mori-native .alert-message.warning { background-color: var(--mori-warning-bg) !important; }
-html[data-mori-theme="dark"] body.mori-native .alert-message.notice { background-color: var(--mori-info-bg) !important; }
-html[data-mori-theme="dark"] body.mori-native .cbi-progressbar > div { background-color: var(--mori-accent) !important; }
-html[data-mori-theme="dark"] body.mori-native .td > .ifacebadge,
-html[data-mori-theme="dark"] body.mori-native td > .ifacebadge { background-color: var(--mori-bg); color: var(--mori-text); }
-
-/* Login controls have their own dark.css border reset; restore the same field
- * shape as the light page without changing authentication behavior. */
-html[data-mori-theme="dark"] body.mori-login .login-page .login-container .login-form .form-login .input-group input {
-  background-color: var(--mori-bg) !important;
-  border: 1px solid var(--mori-border) !important;
-  border-radius: 9px !important;
-  color: var(--mori-text);
-}
-html[data-mori-theme="dark"] body.mori-login .login-page .login-container .login-form .form-login .input-group input:focus-visible { border-color: var(--mori-accent) !important; }
-html[data-mori-theme="dark"] body.mori-login .login-page .login-container .login-form .cbi-button-apply {
-  background-color: var(--mori-accent) !important;
-  border-color: var(--mori-accent) !important;
-  color: var(--mori-on-accent) !important;
-}
-
-/* The application scrollport is shared; nested scrollports are themed only
- * on native pages. No inherited scrollbar color leaks into plugin content. */
-body.mori-modern .main > .main-right::-webkit-scrollbar,
-body.mori-native #maincontent::-webkit-scrollbar,
-body.mori-native #maincontent ::-webkit-scrollbar,
-body.mori-native #modal_overlay::-webkit-scrollbar,
-body.mori-native #modal_overlay ::-webkit-scrollbar { width: 7px; height: 7px; }
-body.mori-modern .main > .main-right::-webkit-scrollbar-track,
-body.mori-native #maincontent::-webkit-scrollbar-track,
-body.mori-native #maincontent ::-webkit-scrollbar-track,
-body.mori-native #modal_overlay::-webkit-scrollbar-track,
-body.mori-native #modal_overlay ::-webkit-scrollbar-track,
-body.mori-modern .main > .main-right::-webkit-scrollbar-corner,
-body.mori-native #maincontent ::-webkit-scrollbar-corner,
-body.mori-native #modal_overlay ::-webkit-scrollbar-corner { background: transparent; }
-body.mori-modern .main > .main-right::-webkit-scrollbar-thumb,
-body.mori-native #maincontent::-webkit-scrollbar-thumb,
-body.mori-native #maincontent ::-webkit-scrollbar-thumb,
-body.mori-native #modal_overlay::-webkit-scrollbar-thumb,
-body.mori-native #modal_overlay ::-webkit-scrollbar-thumb { background: var(--mori-border); border-radius: 7px; }
-body.mori-modern .main > .main-right::-webkit-scrollbar-thumb:hover,
-body.mori-modern .main > .main-right::-webkit-scrollbar-thumb:active,
-body.mori-native #maincontent::-webkit-scrollbar-thumb:hover,
-body.mori-native #maincontent::-webkit-scrollbar-thumb:active,
-body.mori-native #maincontent ::-webkit-scrollbar-thumb:hover,
-body.mori-native #maincontent ::-webkit-scrollbar-thumb:active,
-body.mori-native #modal_overlay::-webkit-scrollbar-thumb:hover,
-body.mori-native #modal_overlay::-webkit-scrollbar-thumb:active,
-body.mori-native #modal_overlay ::-webkit-scrollbar-thumb:hover,
-body.mori-native #modal_overlay ::-webkit-scrollbar-thumb:active { background: var(--mori-muted); }
-
-/* LuCI package manager uses text inputs without a type attribute. */
-body.mori-native input:not([type]) {
- color: var(--mori-text); border: 1px solid var(--mori-border); background: var(--mori-bg);
- border-radius: 8px; font: 14px/1.5 var(--mori-font); height: 38px; padding: 7px 11px; box-shadow: none;
-}
-html[data-mori-theme="dark"] body.mori-native input:not([type]) { background-color: var(--mori-bg) !important; }
-
-/* Stock realtime SVGs carry fixed inline colors; match their existing legends. */
-body.mori-native[data-page^="admin-status-realtime"] #maincontent svg text {
- fill: var(--mori-muted) !important; text-shadow: none !important; font-family: var(--mori-font) !important;
-}
-body.mori-native[data-page^="admin-status-realtime"] #maincontent svg line { stroke: var(--mori-border) !important; stroke-width: 1 !important; }
-body.mori-native[data-page^="admin-status-realtime"] #maincontent svg polyline { fill-opacity: .12 !important; stroke-width: 1.8 !important; }
-body.mori-native[data-page^="admin-status-realtime"] svg :is(#rx,#udp,#load01) { stroke: var(--mori-accent) !important; fill: var(--mori-accent) !important; }
-body.mori-native[data-page^="admin-status-realtime"] svg :is(#tx,#tcp,#load05) { stroke: var(--mori-info) !important; fill: var(--mori-info) !important; }
-body.mori-native[data-page^="admin-status-realtime"] svg :is(#other,#load15) { stroke: var(--mori-warning) !important; fill: var(--mori-warning) !important; }
-body.mori-native[data-page^="admin-status-realtime"] strong:is([style*="blue"],[style*="#f00"]) { border-bottom-color: var(--mori-accent) !important; }
-body.mori-native[data-page^="admin-status-realtime"] strong:is([style*="green"],[style*="#f60"]) { border-bottom-color: var(--mori-info) !important; }
-body.mori-native[data-page^="admin-status-realtime"] strong:is([style*="red"],[style*="#fa0"]) { border-bottom-color: var(--mori-warning) !important; }
-
-/* Narrow native forms: release Argon's intrinsic text/dynamic-list widths.
- * Keep overlay visibility, dropdown positioning and scroll behavior untouched. */
-@media (max-width: 600px) {
   body.mori-native #modal_overlay > .modal,
-  body.mori-native #modal_overlay > .modal > *,
   body.mori-native .modal .cbi-map,
   body.mori-native .modal .cbi-section,
   body.mori-native .modal .cbi-section-node,
@@ -970,9 +900,6 @@ body.mori-native[data-page^="admin-status-realtime"] strong:is([style*="red"],[s
     flex: 0 0 36px;
     min-width: 36px;
   }
-
-  /* The interface list is already rendered as cards by Argon at this width.
-   * Give its status field a complete line instead of a narrow flex column. */
   body.mori-native[data-page="admin-network-network"] #maincontent .cbi-section-table-row > .td {
     flex-basis: 100%;
     width: 100%;
@@ -1026,107 +953,11 @@ body.mori-native[data-page^="admin-status-realtime"] strong:is([style*="red"],[s
     text-overflow: clip;
   }
 }
-
-/* Dynamic-list actions are compact, separate controls. Preserve LuCI's
- * pseudo-element removal target and native event/disabled handling. */
-html[data-mori-theme] body.mori-native {
-  --mori-dyn-add-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M8 2v12M2 8h12' fill='none' stroke='%2327634c' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E");
-  --mori-dyn-remove-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='m3 3 10 10M13 3 3 13' fill='none' stroke='%23627168' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E");
-  --mori-dyn-remove-hover-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='m3 3 10 10M13 3 3 13' fill='none' stroke='%23a73139' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E");
-}
-html[data-mori-theme="dark"] body.mori-native {
-  --mori-dyn-add-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M8 2v12M2 8h12' fill='none' stroke='%239ed0b4' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E");
-  --mori-dyn-remove-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='m3 3 10 10M13 3 3 13' fill='none' stroke='%23a2b2a8' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E");
-  --mori-dyn-remove-hover-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='m3 3 10 10M13 3 3 13' fill='none' stroke='%23f1a7ab' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E");
-}
-html[data-mori-theme] body.mori-native .cbi-dynlist {
-  width: 280px;
-  min-width: 0;
-  max-width: 100%;
-}
-html[data-mori-theme] body.mori-native .cbi-dynlist > .item,
-html[data-mori-theme] body.mori-native .cbi-dynlist > .add-item {
-  gap: 8px !important;
-  align-items: flex-start;
-  min-width: 0;
-  max-width: 100%;
-}
-html[data-mori-theme] body.mori-native .cbi-dynlist > .item {
-  padding: 0;
-  background: transparent !important;
-  border: 0;
-  box-shadow: none;
-}
-html[data-mori-theme] body.mori-native .cbi-dynlist > .item > span {
-  flex: 1 1 0;
-  min-width: 0;
-  width: auto;
-  height: auto;
-  min-height: 38px;
-  padding: 8px 12px;
-  border: 1px solid var(--mori-border) !important;
-  border-radius: 8px;
-  background: var(--mori-tint) !important;
-  color: var(--mori-text) !important;
-  line-height: 20px;
-  white-space: normal;
-  overflow-wrap: anywhere;
-}
-html[data-mori-theme] body.mori-native .cbi-dynlist > .add-item > input {
-  flex: 1 1 0;
-  min-width: 0;
-  width: 0;
-  max-width: 100%;
-  border-radius: 8px;
-  border-right-width: 1px;
-}
-html[data-mori-theme] body.mori-native .cbi-dynlist > .item::after,
-html[data-mori-theme] body.mori-native .cbi-dynlist > .add-item > .cbi-button-add {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  align-self: center;
-  box-sizing: border-box;
-  flex: 0 0 38px;
-  width: 38px !important;
-  min-width: 38px;
-  max-width: 38px;
-  height: 38px;
-  min-height: 38px;
-  margin: 0;
-  padding: 0 !important;
-  border: 1px solid var(--mori-border) !important;
-  border-radius: 8px;
-  background-color: var(--mori-panel) !important;
-  background-image: var(--mori-dyn-remove-icon) !important;
-  background-position: center !important;
-  background-size: 16px 16px !important;
-  background-repeat: no-repeat !important;
-  color: var(--mori-muted) !important;
-  /* Keep LuCI's original text/target; draw geometry independent of font metrics. */
-  font-size: 0 !important;
-  line-height: 1;
-  text-shadow: none;
-  box-shadow: none;
-  cursor: pointer;
-  transition: background-color .12s ease, border-color .12s ease, color .12s ease;
-}
-html[data-mori-theme] body.mori-native .cbi-dynlist > .add-item > .cbi-button-add {
-  background-color: var(--mori-tint) !important;
-  background-image: var(--mori-dyn-add-icon) !important;
-  color: var(--mori-accent) !important;
-}
-html[data-mori-theme] body.mori-native .cbi-dynlist > .add-item > .cbi-button-add:hover {
-  border-color: var(--mori-accent) !important;
-}
-html[data-mori-theme] body.mori-native .cbi-dynlist > .item:hover::after {
-  background-color: var(--mori-danger-bg) !important;
-  background-image: var(--mori-dyn-remove-hover-icon) !important;
-  border-color: var(--mori-danger) !important;
-  color: var(--mori-danger) !important;
-}
-html[data-mori-theme] body.mori-native .cbi-dynlist > .item:focus-visible::after,
-html[data-mori-theme] body.mori-native .cbi-dynlist > .add-item > .cbi-button-add:focus-visible {
-  outline: 2px solid var(--mori-accent);
-  outline-offset: 2px;
+@media (prefers-reduced-motion: reduce) {
+  body.mori-modern .main-left,
+  body.mori-modern .main-left .nav a,
+  body.mori-modern .main-left .nav li .menu,
+  body.mori-native .cbi-button,
+  body.mori-native .btn,
+  body.mori-native .cbi-progressbar > div { transition: none; }
 }

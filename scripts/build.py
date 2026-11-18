@@ -29,7 +29,7 @@ def build():
         original = template.read_text(encoding='utf-8')
         text = original.replace('@MORI_VERSION@', version)
         text = re.sub(r'Mori \d+\.\d+\.\d+(?:-[a-z0-9.]+)? ·', f'Mori {version} ·', text)
-        for asset in ['css/cascade.css', 'css/dark.css', 'mori.css', 'theme.js', 'icon.svg']:
+        for asset in ['css/cascade.css', 'mori.css', 'theme.js', 'icon.svg', 'manifest.webmanifest']:
             text = re.sub(re.escape(asset) + r'\?v=[a-zA-Z0-9_.-]+', asset + '?v=' + digest(static / asset)[:12], text)
         if text != original:
             template.write_text(text, encoding='utf-8', newline='\n')

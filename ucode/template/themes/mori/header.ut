@@ -17,23 +17,36 @@
 -#}
 
 {%
-	import { readfile, access } from 'fs';
-	import { cursor } from 'uci';
-	import { srand } from 'math';
 	import { getuid, getspnam } from 'luci.core';
 
 	const boardinfo = ubus.call("system", "board");
 	const hostname = striptags(boardinfo?.hostname ?? '?');
 
-	let cfg = cursor();
-
-	//send as HTML5
 	http.prepare_content('text/html; charset=UTF-8');
 
-	srand(+substr(reverse(time() + ""), 0, 8));
-
-	let bar_color = '#27634c';
-	const moriNative = index(["", "admin", "admin/logout", "admin/menu", "admin/nas", "admin/network", "admin/network/dhcp", "admin/network/diagnostics", "admin/network/dns", "admin/network/firewall", "admin/network/firewall/custom", "admin/network/firewall/forwards", "admin/network/firewall/ipsets", "admin/network/firewall/rules", "admin/network/firewall/snats", "admin/network/firewall/zones", "admin/network/network", "admin/network/remote_addr/*", "admin/network/routes", "admin/network/switch", "admin/network/wireless", "admin/services", "admin/status", "admin/status/channel_analysis", "admin/status/iptables", "admin/status/logs", "admin/status/logs/dmesg", "admin/status/logs/syslog", "admin/status/nftables", "admin/status/nftables/iptables", "admin/status/overview", "admin/status/processes", "admin/status/realtime", "admin/status/realtime/bandwidth", "admin/status/realtime/connections", "admin/status/realtime/load", "admin/status/realtime/wireless", "admin/status/routes", "admin/status/routesj", "admin/system", "admin/system/admin", "admin/system/admin/dropbear", "admin/system/admin/password", "admin/system/admin/repokeys", "admin/system/admin/sshkeys", "admin/system/admin/uhttpd", "admin/system/crontab", "admin/system/flash", "admin/system/leds", "admin/system/mounts", "admin/system/package-manager", "admin/system/reboot", "admin/system/startup", "admin/system/system", "admin/translations/*", "admin/ubus/*", "admin/uci", "admin/uci/apply_rollback", "admin/uci/apply_unchecked", "admin/uci/confirm", "admin/uci/revert", "admin/vpn"], join('/', ctx.request_path)) >= 0;
+	const bar_color = '#27634c';
+	const moriNative = index([
+		"", "admin", "admin/nas", "admin/network", "admin/network/dhcp",
+		"admin/network/diagnostics", "admin/network/dns", "admin/network/firewall",
+		"admin/network/firewall/custom", "admin/network/firewall/forwards",
+		"admin/network/firewall/ipsets", "admin/network/firewall/rules",
+		"admin/network/firewall/snats", "admin/network/firewall/zones",
+		"admin/network/network", "admin/network/routes", "admin/network/switch",
+		"admin/network/wireless", "admin/services", "admin/status",
+		"admin/status/channel_analysis", "admin/status/iptables", "admin/status/logs",
+		"admin/status/logs/dmesg", "admin/status/logs/syslog", "admin/status/nftables",
+		"admin/status/nftables/iptables", "admin/status/overview",
+		"admin/status/processes", "admin/status/realtime",
+		"admin/status/realtime/bandwidth", "admin/status/realtime/connections",
+		"admin/status/realtime/load", "admin/status/realtime/wireless",
+		"admin/status/routes", "admin/status/routesj", "admin/system",
+		"admin/system/admin", "admin/system/admin/dropbear",
+		"admin/system/admin/password", "admin/system/admin/repokeys",
+		"admin/system/admin/sshkeys", "admin/system/admin/uhttpd",
+		"admin/system/crontab", "admin/system/flash", "admin/system/leds",
+		"admin/system/mounts", "admin/system/package-manager", "admin/system/reboot",
+		"admin/system/startup", "admin/system/system", "admin/uci", "admin/vpn"
+	], join('/', ctx.request_path)) >= 0;
 -%}
 <!DOCTYPE html>
 <html lang="{{ dispatcher.lang }}">
@@ -43,38 +56,25 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>{{ hostname }}{{ node?.title ? ` - ${striptags(node.title)}` : '' }} - Mori</title>
 
-	<!-- SEO and Description -->
 	<meta name="robots" content="noindex, nofollow">
-
-	<!-- Security -->
-	<meta http-equiv="X-Content-Type-Options" content="nosniff">
-	<!-- <meta http-equiv="X-Frame-Options" content="SAMEORIGIN"> -->
-	<meta http-equiv="X-XSS-Protection" content="1; mode=block">
-	<meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
-
-	<!-- Mobile and PWA -->
+	<meta name="referrer" content="strict-origin-when-cross-origin">
 	<meta name="format-detection" content="telephone=no, email=no">
 	<meta name="mobile-web-app-capable" content="yes">
 	<meta name="apple-mobile-web-app-capable" content="yes">
 	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 	<meta name="apple-mobile-web-app-title" content="{{ hostname }} - Mori">
-
-	<!-- Theme and Colors -->
 	<meta name="theme-color" content="{{ bar_color }}">
 	<meta name="msapplication-TileColor" content="{{ bar_color }}">
 	<meta name="application-name" content="{{ hostname }} - Mori">
 
-	<!-- Mori identity; no device-specific icons or external font requests. -->
 	<link rel="icon" type="image/svg+xml" href="{{ media }}/icon.svg?v=65d7ffbb254b">
-	<link rel="manifest" href="{{ media }}/manifest.webmanifest" crossorigin="use-credentials">
+	<link rel="manifest" href="{{ media }}/manifest.webmanifest?v=4ee6b4d19653" crossorigin="use-credentials">
 
-	<link rel="stylesheet" href="{{ media }}/css/cascade.css?v=0d223091b0a9">
-	<link rel="stylesheet" href="{{ media }}/css/dark.css?v=b7983770fabb" id="mori-dark-css" media="not all">
-	<link rel="stylesheet" href="{{ media }}/mori.css?v=2bfe1d42db4b">
-	<script src="{{ media }}/theme.js?v=d66b885a37f3"></script>
-	<!-- Stylesheets -->
+	<link rel="stylesheet" href="{{ media }}/css/cascade.css?v=e6a78d10377e">
+	<link rel="stylesheet" href="{{ media }}/mori.css?v=548cb94b4b96">
+	<script src="{{ media }}/theme.js?v=198c3bd13936"></script>
 	{% if (node?.css): %}
-	<link rel="stylesheet" href="{{ resource }}/{{ node.css}}">
+	<link rel="stylesheet" href="{{ resource }}/{{ node.css }}">
 	{% endif -%}
 	{% if (css): %}
 	<style title="text/css">
@@ -87,7 +87,7 @@
 </head>
 
 <body
-	class="mori-modern {{ moriNative ? 'mori-native' : 'mori-plugin' }} lang_{{ dispatcher.lang }} {{ node?.title ? ` - ${striptags(node.title)}` : '' }} {% if (ctx.authsession): %}logged-in{% endif %}"
+	class="mori-modern {{ moriNative ? 'mori-native' : 'mori-plugin' }} lang_{{ dispatcher.lang }} {% if (ctx.authsession): %}logged-in{% endif %}"
 	data-page="{{ entityencode(join('-', ctx.request_path), true) }}">
 
 	<div class="main">
@@ -95,7 +95,6 @@
 			<div class="sidenav-header d-flex align-items-center">
 				<a class="brand" href="{{ dispatcher.build_url('admin/status/overview') }}"><span class="mori-brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M5 18V6l7 8 7-8v12" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="mori-brand-copy">Mori<small>LUCI THEME</small></span></a>
 				<div class="ml-auto">
-					<!-- Sidenav toggler -->
 					<div class="sidenav-toggler d-none d-xl-block active" data-action="sidenav-unpin"
 						data-target="#sidenav-main">
 						<div class="sidenav-toggler-inner">
@@ -133,11 +132,11 @@
 					</div>
 					{% endif %}
 
-				<noscript>
-					<div class="alert-message error">
-						<h4>{{ _('JavaScript required!') }}</h4>
-						<p>{{ _('You must enable JavaScript in your browser or LuCI will not work properly.') }}</p>
-					</div>
-				</noscript>
+					<noscript>
+						<div class="alert-message error">
+							<h4>{{ _('JavaScript required!') }}</h4>
+							<p>{{ _('You must enable JavaScript in your browser or LuCI will not work properly.') }}</p>
+						</div>
+					</noscript>
 
 					<div id="tabmenu" style="display:none"></div>
