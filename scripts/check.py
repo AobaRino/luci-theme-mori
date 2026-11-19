@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check source hygiene, asset references and the standalone archive manifest."""
+"""Check source hygiene, asset references, translations and the standalone archive manifest."""
 from pathlib import Path
 import hashlib
 import json
@@ -19,12 +19,53 @@ def require(condition, message):
         errors.append(message)
 
 
+def parse_po(path):
+    entries = {}
+    msgid = None
+    msgstr = None
+    field = None
+
+    def flush():
+        nonlocal msgid, msgstr
+        if msgid is not None:
+            entries[msgid] = msgstr or ''
+        msgid = None
+        msgstr = None
+
+    for raw_line in path.read_text(encoding='utf-8').splitlines():
+        line = raw_line.strip()
+        if not line:
+            flush()
+            field = None
+            continue
+        if line.startswith('#'):
+            continue
+        if line.startswith('msgid '):
+            flush()
+            msgid = json.loads(line[6:])
+            msgstr = ''
+            field = 'id'
+        elif line.startswith('msgstr '):
+            msgstr = json.loads(line[7:])
+            field = 'str'
+        elif line.startswith('"') and field == 'id':
+            msgid += json.loads(line)
+        elif line.startswith('"') and field == 'str':
+            msgstr += json.loads(line)
+        else:
+            require(False, f'Unexpected PO line in {path.relative_to(ROOT)}: {line}')
+    flush()
+    return entries
+
+
 def main():
-    version = (ROOT / 'VERSION').read_text().strip()
-    require(f'PKG_VERSION:={version}' in (ROOT / 'Makefile').read_text(), 'Makefile PKG_VERSION and VERSION differ')
+    version = (ROOT / 'VERSION').read_text(encoding='ascii').strip()
+    makefile = (ROOT / 'Makefile').read_text(encoding='utf-8')
+    require(f'PKG_VERSION:={version}' in makefile, 'Makefile PKG_VERSION and VERSION differ')
+    require('PKG_PO_VERSION:=$(PKG_VERSION)-r$(PKG_RELEASE)' in makefile, 'Makefile must pin PKG_PO_VERSION')
     static = ROOT / 'htdocs/luci-static/mori'
     templates = ROOT / 'ucode/template/themes/mori'
-    for folder in [ROOT / 'htdocs', ROOT / 'ucode', ROOT / 'root', ROOT / 'scripts']:
+    for folder in [ROOT / 'htdocs', ROOT / 'ucode', ROOT / 'root', ROOT / 'scripts', ROOT / 'po']:
         for path in folder.rglob('*'):
             if not path.is_file() or '__pycache__' in path.parts or path.suffix in ['.woff', '.woff2', '.png']:
                 continue
@@ -37,6 +78,20 @@ def main():
             # Deployment helpers and live evidence must remain outside the public repo.
             require(not re.search(r'(?<![\w.])(?:192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(?:1[6-9]|2\d|3[01])\.\d+\.\d+)(?![\w.])', content), f'Private address in {path.relative_to(ROOT)}')
             require(not re.search(r'-----BEGIN (?:OPENSSH |RSA |EC )?PRIVATE KEY-----', content), f'Private key in {path.relative_to(ROOT)}')
+
+    pot_path = ROOT / 'po/templates/mori.pot'
+    zh_path = ROOT / 'po/zh_Hans/mori.po'
+    require(pot_path.is_file() and zh_path.is_file(), 'Missing translation catalog files under po/')
+    if pot_path.is_file() and zh_path.is_file():
+        pot_entries = parse_po(pot_path)
+        zh_entries = parse_po(zh_path)
+        pot_keys = {k for k in pot_entries if k}
+        zh_keys = {k for k in zh_entries if k}
+        require(bool(pot_keys), 'Empty translation template po/templates/mori.pot')
+        missing = sorted(pot_keys - zh_keys)
+        require(not missing, f'Missing zh_Hans translations: {missing}')
+        empty = sorted(k for k in pot_keys & zh_keys if not zh_entries[k].strip())
+        require(not empty, f'Empty zh_Hans translations: {empty}')
 
     for css in static.rglob('*.css'):
         for ref in re.findall(r'url\(([^)]+)\)', css.read_text(encoding='utf-8')):
@@ -82,7 +137,7 @@ def main():
     if errors:
         print('\n'.join(errors), file=sys.stderr)
         raise SystemExit(1)
-    print('Source, asset references, fingerprints and archive checks passed.')
+    print('Source, asset references, translations, fingerprints and archive checks passed.')
 
 
 if __name__ == '__main__':

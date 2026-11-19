@@ -24,17 +24,16 @@
 {% include("themes/" + theme + "/out_header_login") %}
 {%
 	const boardinfo = ubus.call("system", "board");
-	const hostname = striptags(boardinfo?.hostname ?? '?');
+	const hostname = entityencode(striptags(boardinfo?.hostname ?? '?'), true);
 %}
 <div class="login-page">
-	<div class="main-bg" id="main-bg"></div>
 	<div class="login-container">
 		<div class="login-form">
 			<a class="brand" href="{{ dispatcher.build_url() }}"><span class="mori-brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M5 18V6l7 8 7-8v12" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
 				<span class="brand-text">Mori</span>
 			</a>
-			<p class="mori-login-subtitle">登录 {{ hostname }} 管理控制台</p>
-			<form class="form-login" method="post" action="{{ http.getenv("REQUEST_URI") }}">
+			<p class="mori-login-subtitle">{{ sprintf(_('Sign in to %s Admin Console'), hostname) }}</p>
+			<form class="form-login" method="post" action="{{ entityencode(http.getenv('REQUEST_URI') ?? '', true) }}">
 
 				{%- if (fuser): %}
 				<div class="errorbox">{{ _('Invalid username and/or password! Please try again.') }}</div>
@@ -42,11 +41,11 @@
 
 				<div class="input-container">
 					<div class="input-group user-icon">
-						<input class="cbi-input-user" id="cbi-input-user" type="text" aria-label="用户名" autocomplete="username" name="luci_username" value="{{ entityencode(duser, true) }}" />
+						<input class="cbi-input-user" id="cbi-input-user" type="text" aria-label="{{ entityencode(_('Username'), true) }}" autocomplete="username" name="luci_username" value="{{ entityencode(duser, true) }}" />
 						<label class="border" for="cbi-input-user"></label>
 					</div>
 					<div class="input-group pass-icon">
-						<input class="cbi-input-password" id="cbi-input-password" type="password" aria-label="密码" autocomplete="current-password" name="luci_password" />
+						<input class="cbi-input-password" id="cbi-input-password" type="password" aria-label="{{ entityencode(_('Password'), true) }}" autocomplete="current-password" name="luci_password" />
 						<label class="border" for="cbi-input-password"></label>
 					</div>
 				</div>

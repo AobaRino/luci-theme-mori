@@ -577,7 +577,6 @@ body.mori-native[data-page="admin-network-diagnostics"] .cbi-section { backgroun
 /* Login is independent of the authenticated-page whitelist. */
 body.mori-login { color: var(--mori-text); font: 14px/1.6 var(--mori-font); background: var(--mori-bg); }
 body.mori-login .login-page { align-items: center; justify-content: center; min-height: 100vh; min-height: 100dvh; height: auto; padding: 32px 18px; }
-body.mori-login .login-page .main-bg { background: var(--mori-bg); }
 body.mori-login .login-page .login-container {
   width: min(100%, 420px);
   height: auto;

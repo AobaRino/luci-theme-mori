@@ -53,7 +53,7 @@ def load_artifacts(root, tag, commit):
     require(manifest.get("tag") == tag and manifest.get("commit") == commit
             and manifest.get("version") == tag[1:], "Manifest does not match the tag and commit.")
     assets = manifest.get("assets", [])
-    require(isinstance(assets, list) and len(assets) == 7, "Expected exactly seven release assets.")
+    require(isinstance(assets, list) and len(assets) == 8, "Expected exactly eight release assets.")
     expected = {}
     for asset in assets:
         require(isinstance(asset, dict), "Invalid asset record.")
@@ -67,11 +67,16 @@ def load_artifacts(root, tag, commit):
     version = tag[1:]
     apks = [name for name in expected
             if re.fullmatch(rf"luci-theme-mori-{re.escape(version)}-r[1-9]\d*\.apk", name)]
+    i18n_apks = [name for name in expected
+                 if re.fullmatch(rf"luci-i18n-mori-zh-cn-{re.escape(version)}-r[1-9]\d*\.apk", name)]
     names = {"APK-SHA256SUMS", "mori-sdk-signing-public.pem",
              f"luci-theme-mori-{version}.tar.gz", f"luci-theme-mori-{version}.tar.gz.sha256",
              f"luci-theme-mori-{version}-sdk-verification.zip",
              f"luci-theme-mori-{version}-sdk-verification.zip.sha256"}
-    require(len(apks) == 1 and set(expected) == names | set(apks), "Unexpected release filenames.")
+    require(len(apks) == 1 and len(i18n_apks) == 1
+            and apks[0].rsplit("-", 1)[1] == i18n_apks[0].rsplit("-", 1)[1]
+            and set(expected) == names | set(apks) | set(i18n_apks),
+            "Unexpected release filenames.")
     require({path.name for path in directory.iterdir()} == set(expected), "Release directory differs from manifest.")
     for name, asset in expected.items():
         path = directory / name

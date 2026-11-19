@@ -1,0 +1,92 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: zh_Hans\n"
+
+#: htdocs/luci-static/mori/theme.js
+msgid "%sd %sh"
+msgstr "%s 天 %s 小时"
+
+#: ucode/template/themes/mori/header.ut
+msgid "Admin Console"
+msgstr "管理控制台"
+
+#: htdocs/luci-static/mori/theme.js
+msgid "CPU Usage"
+msgstr "CPU 使用率"
+
+#: htdocs/luci-static/mori/theme.js
+msgid "Device status and active connections, clear at a glance."
+msgstr "设备状态与每一条连接，清晰可见。"
+
+#: htdocs/luci-static/mori/theme.js
+msgid "From system status"
+msgstr "来自系统状态"
+
+#: htdocs/luci-static/mori/theme.js
+msgid "Loading…"
+msgstr "读取中…"
+
+#: ucode/template/themes/mori/header.ut
+msgid "Local admin"
+msgstr "本地管理"
+
+#: htdocs/luci-static/mori/theme.js
+msgid "Memory Used"
+msgstr "已用内存"
+
+#: htdocs/luci-static/mori/theme.js
+msgid "Network Overview"
+msgstr "网络总览"
+
+#: htdocs/luci-static/mori/theme.js
+msgid "Not updated"
+msgstr "未更新"
+
+#: htdocs/luci-static/mori/theme.js
+msgid "Online Users"
+msgstr "在线用户"
+
+#: ucode/template/themes/mori/header.ut
+msgid "Open navigation menu"
+msgstr "打开导航菜单"
+
+#: ucode/template/themes/mori/sysauth.ut
+msgid "Password"
+msgstr "密码"
+
+#: htdocs/luci-static/mori/theme.js
+msgid "Realtime traffic"
+msgstr "查看实时流量"
+
+#: ucode/template/themes/mori/sysauth.ut
+msgid "Sign in to %s Admin Console"
+msgstr "登录 %s 管理控制台"
+
+#: htdocs/luci-static/mori/theme.js
+msgid "Source section hidden"
+msgstr "来源区块已隐藏"
+
+#: htdocs/luci-static/mori/theme.js ucode/template/themes/mori/header.ut
+msgid "Switch to dark theme"
+msgstr "切换为深色主题"
+
+#: htdocs/luci-static/mori/theme.js ucode/template/themes/mori/header.ut
+msgid "Switch to light theme"
+msgstr "切换为浅色主题"
+
+#: ucode/template/themes/mori/header.ut
+msgid "Toggle light/dark theme"
+msgstr "切换明暗主题"
+
+#: htdocs/luci-static/mori/theme.js
+msgid "Unavailable"
+msgstr "尚未获取"
+
+#: htdocs/luci-static/mori/theme.js
+msgid "Uptime"
+msgstr "运行时间"
+
+#: ucode/template/themes/mori/sysauth.ut
+msgid "Username"
+msgstr "用户名"

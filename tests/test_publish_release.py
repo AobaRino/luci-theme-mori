@@ -70,7 +70,8 @@ class PublisherTests(unittest.TestCase):
         self.metadata = self.root / "dist/release-metadata"
         self.assets.mkdir(parents=True)
         self.metadata.mkdir(parents=True)
-        names = ["luci-theme-mori-0.2.0-r1.apk", "mori-sdk-signing-public.pem", "APK-SHA256SUMS",
+        names = ["luci-theme-mori-0.2.0-r1.apk", "luci-i18n-mori-zh-cn-0.2.0-r1.apk",
+                 "mori-sdk-signing-public.pem", "APK-SHA256SUMS",
                  "luci-theme-mori-0.2.0.tar.gz", "luci-theme-mori-0.2.0.tar.gz.sha256",
                  "luci-theme-mori-0.2.0-sdk-verification.zip", "luci-theme-mori-0.2.0-sdk-verification.zip.sha256"]
         self.manifest = {"tag": TAG, "commit": COMMIT, "version": "0.2.0", "assets": []}
@@ -92,7 +93,7 @@ class PublisherTests(unittest.TestCase):
         self.client.annotated = True
         self.publish()
         self.assertTrue(self.client.writes[0][1]["draft"])
-        self.assertEqual([method for method, _ in self.client.writes], ["POST"] + ["UPLOAD"] * 7 + ["PATCH"])
+        self.assertEqual([method for method, _ in self.client.writes], ["POST"] + ["UPLOAD"] * 8 + ["PATCH"])
         self.assertFalse(self.client.release["draft"])
         self.assertEqual(self.client.writes[-1][1], {"draft": False, "make_latest": "true"})
 
@@ -101,11 +102,11 @@ class PublisherTests(unittest.TestCase):
         with self.assertRaises(MODULE.ReleaseError):
             self.publish()
         self.assertTrue(self.client.release["draft"])
-        self.assertEqual(len(self.client.release["assets"]), 1)
+        self.assertEqual(len(self.client.release["assets"]), 2)
         self.client.fail_upload = None
         self.client.lookups.clear()
         self.publish()
-        self.assertEqual(len(self.client.release["assets"]), 7)
+        self.assertEqual(len(self.client.release["assets"]), 8)
         self.assertEqual(sum(method == "POST" for method, _ in self.client.writes), 1)
         self.assertIn(("GET", f"repos/{REPO}/releases?per_page=100&page=1"), self.client.lookups)
 

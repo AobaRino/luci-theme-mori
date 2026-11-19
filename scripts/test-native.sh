@@ -30,6 +30,9 @@ mkdir -p "$root/tmp" "$root/dev" "$root/etc/config" "$root/root"
 find "$out" -maxdepth 1 -type f -name 'luci-theme-mori-*.apk' > "$work/packages"
 [ "$(wc -l < "$work/packages")" -eq 1 ]
 cp "$(cat "$work/packages")" "$root/tmp/mori.apk"
+find "$out" -maxdepth 1 -type f -name 'luci-i18n-mori-zh-cn-*.apk' > "$work/i18n-packages"
+[ "$(wc -l < "$work/i18n-packages")" -eq 1 ]
+cp "$(cat "$work/i18n-packages")" "$root/tmp/mori-i18n-zh-cn.apk"
 mkdir -p "$root/tmp/mori-keys"
 cp "$out/mori-sdk-signing-public.pem" "$root/tmp/mori-keys/"
 cp "$out/hooks/post-upgrade" "$root/root/mori-post-upgrade"
@@ -114,6 +117,17 @@ assert_equal "$(sha256sum /etc/config/network)" "$network_before" 'network confi
 assert_equal "$(uci changes network)" "$network_delta_before" 'pending network edits'
 assert_equal "$(find /etc/config -type f ! -name luci -exec sha256sum '{}' ';' | sort)" "$other_before" 'all non-LuCI configurations'
 echo 'PASS: native uninstall, usable fallback, unchanged non-LuCI configuration and pending network edits'
+
+# Verify optional zh-cn language pack installation and clean removal.
+uci revert network
+apk --keys-dir /tmp/mori-keys --no-network --repositories-file /dev/null verify /tmp/mori-i18n-zh-cn.apk
+apk --keys-dir /tmp/mori-keys --no-network --repositories-file /dev/null add /tmp/mori.apk /tmp/mori-i18n-zh-cn.apk
+test -s /usr/lib/lua/luci/i18n/mori.zh-cn.lmo
+sh /usr/libexec/mori-register --prepare-remove
+apk --no-network --repositories-file /dev/null del luci-i18n-mori-zh-cn luci-theme-mori
+test ! -e /usr/lib/lua/luci/i18n/mori.zh-cn.lmo
+test ! -e /www/luci-static/mori/mori.css
+echo 'PASS: native zh-cn language pack install, compiled LMO and uninstall'
 TEST
 
 if chroot "$root" /bin/sh /root/mori-test > "$work/smoke.log" 2>&1; then

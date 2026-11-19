@@ -1,6 +1,6 @@
 #!/bin/sh
 # SPDX-License-Identifier: Apache-2.0
-# Build one native APK with the release SDK and immutable feed revisions.
+# Build native theme and i18n APKs with the release SDK and immutable feed revisions.
 set -eu
 umask 022
 
@@ -61,7 +61,7 @@ PY
 cp "$work/feeds.buildinfo" "$out/feeds.buildinfo"
 cp "$sdk/feeds.conf" "$out/feeds.conf"
 mkdir -p "$sdk/package/luci-theme-mori"
-for item in Makefile LICENSE htdocs ucode root; do
+for item in Makefile LICENSE htdocs ucode root po; do
     cp -R "$repo/$item" "$sdk/package/luci-theme-mori/"
 done
 source_commit=$(git -C "$repo" rev-parse HEAD)
@@ -79,6 +79,8 @@ CONFIG_ALL_KMODS=n
 CONFIG_AUTOREMOVE=n
 CONFIG_SIGNED_PACKAGES=n
 CONFIG_PACKAGE_luci-theme-mori=m
+CONFIG_LUCI_LANG_zh_Hans=y
+CONFIG_PACKAGE_luci-i18n-mori-zh-cn=m
 CONFIG_LUCI_MINIFY_JS=n
 CONFIG_LUCI_MINIFY_CSS=n
 CONFIG_LUCI_MINIFY_UT=n
@@ -96,9 +98,16 @@ find "$sdk/bin/packages" -type f -name 'luci-theme-mori-*.apk' > "$work/packages
 package=$(cat "$work/packages")
 package_name=$(basename "$package")
 cp "$package" "$out/$package_name"
+
+find "$sdk/bin/packages" -type f -name 'luci-i18n-mori-zh-cn-*.apk' > "$work/i18n-packages"
+[ "$(wc -l < "$work/i18n-packages")" -eq 1 ] || fail 'Expected exactly one Mori zh-cn i18n APK'
+i18n_package=$(cat "$work/i18n-packages")
+i18n_package_name=$(basename "$i18n_package")
+cp "$i18n_package" "$out/$i18n_package_name"
+
 apk="$sdk/staging_dir/host/bin/apk"
 [ -x "$apk" ] || fail 'SDK apk tool is missing'
-# A per-build key verifies this artifact without changing the router's trusted
+# A per-build key verifies these artifacts without changing the router's trusted
 # keys. Its private half exists only in the temporary SDK work directory.
 mkdir -m 700 "$work/signing" "$work/keys"
 openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out "$work/signing/private.pem" 2> "$work/signing/keygen.log"
@@ -106,26 +115,30 @@ chmod 600 "$work/signing/private.pem"
 openssl pkey -in "$work/signing/private.pem" -pubout -out "$out/mori-sdk-signing-public.pem"
 cp "$out/mori-sdk-signing-public.pem" "$work/keys/"
 package="$out/$package_name"
-printf '%s\n' 'Signing the locally built unsigned APK with a disposable build key'
+i18n_package="$out/$i18n_package_name"
+printf '%s\n' 'Signing the locally built unsigned APKs with a disposable build key'
 "$apk" --allow-untrusted adbsign --sign-key "$work/signing/private.pem" "$package"
-printf '%s\n' 'Verifying the signed APK with its scoped public key'
-"$apk" --keys-dir "$work/keys" --no-network --repositories-file /dev/null verify "$package" > "$out/signature-verification.txt"
+"$apk" --allow-untrusted adbsign --sign-key "$work/signing/private.pem" "$i18n_package"
+printf '%s\n' 'Verifying the signed APKs with their scoped public key'
+"$apk" --keys-dir "$work/keys" --no-network --repositories-file /dev/null verify "$package" "$i18n_package" > "$out/signature-verification.txt"
 "$apk" --keys-dir "$work/keys" adbdump "$package" > "$out/package-metadata.yaml"
-mkdir -p "$work/payload" "$out/hooks"
+"$apk" --keys-dir "$work/keys" adbdump "$i18n_package" > "$out/i18n-zh-cn-metadata.yaml"
+mkdir -p "$work/payload" "$work/i18n-zh-cn-payload" "$out/hooks"
 "$apk" --keys-dir "$work/keys" extract --no-chown --destination "$work/payload" "$package"
+"$apk" --keys-dir "$work/keys" extract --no-chown --destination "$work/i18n-zh-cn-payload" "$i18n_package"
 hook_dir=$(find "$sdk/build_dir" -type d -path '*/apk-all/luci-theme-mori' -print)
 [ -n "$hook_dir" ] && [ -d "$hook_dir" ] || fail 'Expected one generated APK hooks directory'
 find "$hook_dir" -maxdepth 1 -type f -exec cp '{}' "$out/hooks/" \;
-python3 "$repo/scripts/inspect-apk.py" "$repo" "$work/payload" "$out"
-python3 - "$repo" "$sdk" "$out" "$source_commit" "$source_epoch" "$base_url/$sdk_name.tar.zst" "$sdk_sha" "$feeds_sha" "$package_name" <<'PY'
+python3 "$repo/scripts/inspect-apk.py" "$repo" "$work/payload" "$out" "$work/i18n-zh-cn-payload"
+python3 - "$repo" "$sdk" "$out" "$source_commit" "$source_epoch" "$base_url/$sdk_name.tar.zst" "$sdk_sha" "$feeds_sha" "$package_name" "$i18n_package_name" <<'PY'
 import hashlib, json, pathlib, subprocess, sys
 repo, sdk, out = map(pathlib.Path, sys.argv[1:4])
-commit, epoch, url, sdk_sha, feeds_sha, package = sys.argv[4:]
+commit, epoch, url, sdk_sha, feeds_sha, package, i18n_package = sys.argv[4:]
 feeds = {}
 for name in ('base', 'packages', 'luci'):
     feeds[name] = subprocess.check_output(['git', '-C', str(sdk/'feeds'/name), 'rev-parse', 'HEAD'], text=True).strip()
 dirty = bool(subprocess.check_output(['git', '-C', str(repo), 'status', '--porcelain'], text=True).strip())
-data = dict(package=package, source_commit=commit, source_dirty=dirty, source_date_epoch=int(epoch),
+data = dict(package=package, i18n_package=i18n_package, source_commit=commit, source_dirty=dirty, source_date_epoch=int(epoch),
             sdk_url=url, sdk_sha256=sdk_sha, feeds_buildinfo_sha256=feeds_sha, feeds=feeds,
             target='x86/64', architecture='noarch', signing='ephemeral RSA-2048 build key',
             public_key_sha256=hashlib.sha256((out/'mori-sdk-signing-public.pem').read_bytes()).hexdigest(),
@@ -134,7 +147,7 @@ data = dict(package=package, source_commit=commit, source_dirty=dirty, source_da
 PY
 (
     cd "$out"
-    sha256sum "$package_name" mori-sdk-signing-public.pem > APK-SHA256SUMS
+    sha256sum "$package_name" "$i18n_package_name" mori-sdk-signing-public.pem > APK-SHA256SUMS
     find . -type f ! -name SHA256SUMS -print | LC_ALL=C sort | while IFS= read -r file; do sha256sum "${file#./}"; done > SHA256SUMS
 )
-printf '\nNative APK and public audit files: %s\n' "$out"
+printf '\nNative APKs and public audit files: %s\n' "$out"

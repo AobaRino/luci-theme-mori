@@ -9,6 +9,7 @@ luci-theme-mori/
 │   └── resources/menu-mori.js # 自带菜单模块
 ├── ucode/template/themes/mori/
 │                             # LuCI ucode 模板
+├── po/                       # LuCI i18n 翻译目录（构建为 luci-i18n-mori-* 语言包）
 ├── root/usr/libexec/        # 原生软件包显式调用的主题登记脚本
 ├── scripts/                 # 检查、构建、独立安装与回退
 ├── docs/
@@ -34,7 +35,7 @@ Windows 可使用 `py -3` 替代 `python3`。构建脚本从本仓库源码生�
 生成的安装目录包含：
 
 ```text
-luci-theme-mori-0.1.0/
+luci-theme-mori-0.1.1/
 ├── rootfs/                  # 准备复制到路由器的资源与模板
 ├── scripts/install.sh
 ├── scripts/rollback.sh
@@ -86,11 +87,11 @@ sudo sh scripts/test-native.sh
 
 输出包括：
 
-- `luci-theme-mori-0.1.0-r1.apk` 与 `mori-sdk-signing-public.pem`。
-- `APK-SHA256SUMS`：仅用于用户安装时校验上述两项。
+- `luci-theme-mori-0.1.1-r1.apk`、`luci-i18n-mori-zh-cn-0.1.1-r1.apk` 与 `mori-sdk-signing-public.pem`。
+- `APK-SHA256SUMS`：仅用于用户安装时校验上述 APK 和公钥。
 - `SHA256SUMS`：整个 SDK 产物目录的完整校验清单。
 - `provenance.json`、`feeds.buildinfo`、`feeds.conf` 和 `sdk.config`：固定输入及构建来源。
-- `package-metadata.yaml`、`payload-sha256.txt`、`payload-verification.txt`、`signature-verification.txt`、`hooks/` 和 `native-smoke-test.txt`：成品及测试记录。
+- `package-metadata.yaml`、`i18n-zh-cn-metadata.yaml`、`payload-sha256.txt`、`i18n-zh-cn-payload-sha256.txt`、`payload-verification.txt`、`signature-verification.txt`、`hooks/` 和 `native-smoke-test.txt`：成品及测试记录。
 
 SDK 构建使用临时签名私钥，只保留公钥作为验证材料，私钥不进入产物或仓库。因此固定的 SDK、feeds 和源码可用于核对构建输入及安装内容，但不同构建的签名和 APK 文件哈希不承诺逐字节相同。发布时应上传实际完成测试的那个 APK。
 
@@ -146,7 +147,7 @@ git push origin v0.1.1
 4. 再次确认远程 tag 指向受测提交，创建 Release 草稿、上传附件并核对 GitHub 返回的每个附件 SHA-256 和大小。
 5. 附件全部一致后将草稿公开为正式 Release。
 
-自动发布包含 7 个附件：原生 APK、公钥、`APK-SHA256SUMS`、独立安装包及其校验文件、SDK 验证归档及其校验文件。原生包上传的是本次测试完成的同一份文件，不在发布阶段重新构建或签名。
+自动发布包含 8 个附件：原生主题 APK、简体中文语言包 APK（`luci-i18n-mori-zh-cn`）、公钥、`APK-SHA256SUMS`、独立安装包及其校验文件、SDK 验证归档及其校验文件。原生包上传的是本次测试完成的同一份文件，不在发布阶段重新构建或签名。
 
 构建和测试 job 只有仓库读取权限；只有最后的发布 job 使用内置 `GITHUB_TOKEN` 的 `contents: write` 权限，无需配置 PAT 或路由器凭据。CI 不连接实际路由器，也不将隔离测试写成实机验收。`docs/VALIDATION.md` 是 v0.1.0 的历史实机记录；后续版本的自动测试记录随各自附件提供。
 

@@ -10,20 +10,36 @@
 
 	var media = window.matchMedia('(prefers-color-scheme: dark)');
 
+	function _(value) {
+		return typeof window._ === 'function' ? window._(value) : value;
+	}
+
 	function updateButton(mode) {
 		var button = document.querySelector('.mori-theme-toggle');
 		if (!button) return;
 		var isDark = mode === 'dark';
 		button.textContent = isDark ? '☀' : '◐';
-		button.setAttribute('aria-label', isDark ? '切换为浅色主题' : '切换为深色主题');
+		var label = isDark
+			? (button.dataset.labelLight || _('Switch to light theme'))
+			: (button.dataset.labelDark || _('Switch to dark theme'));
+		button.setAttribute('aria-label', label);
+		button.setAttribute('title', label);
+	}
+
+	function updateThemeColor(mode) {
+		var meta = document.querySelector('meta[name="theme-color"]');
+		if (!meta) return;
+		var isLogin = document.body && document.body.classList.contains('mori-login');
+		var color = mode === 'dark'
+			? (isLogin ? '#121817' : '#1b2420')
+			: (isLogin ? '#f4f6f5' : '#ffffff');
+		meta.setAttribute('content', color);
 	}
 
 	function applyAppearance(value) {
 		var mode = value === 'dark' ? 'dark' : 'light';
 		root.setAttribute('data-mori-theme', mode);
-		var color = mode === 'dark' ? '#171f1b' : '#27634c';
-		var meta = document.querySelector('meta[name="theme-color"]');
-		if (meta) meta.setAttribute('content', color);
+		updateThemeColor(mode);
 		updateButton(mode);
 	}
 
@@ -40,6 +56,9 @@
 	}
 
 	document.addEventListener('DOMContentLoaded', function () {
+		var currentMode = root.getAttribute('data-mori-theme') || 'light';
+		updateThemeColor(currentMode);
+
 		var button = document.querySelector('.mori-theme-toggle');
 		if (button) {
 			button.addEventListener('click', function () {
@@ -49,7 +68,7 @@
 				} catch (_) {}
 				applyAppearance(stored);
 			});
-			updateButton(root.getAttribute('data-mori-theme'));
+			updateButton(currentMode);
 		}
 
 		var toggle = document.querySelector('a.showSide');
@@ -76,11 +95,11 @@
 		if (!container || !view) return;
 
 		var heading = container.querySelector('h2');
-		if (heading) heading.textContent = '网络总览';
+		if (heading) heading.textContent = _('Network Overview');
 
 		var intro = element('div', 'mori-page-intro');
-		intro.appendChild(element('p', '', '设备状态与每一条连接，清晰可见。'));
-		var link = element('a', 'mori-overview-link', '查看实时流量 ↗');
+		intro.appendChild(element('p', '', _('Device status and active connections, clear at a glance.')));
+		var link = element('a', 'mori-overview-link', _('Realtime traffic') + ' ↗');
 		if (window.L && typeof window.L.url === 'function') {
 			link.href = window.L.url('admin/status/realtime/bandwidth');
 		} else {
@@ -93,36 +112,36 @@
 
 		var grid = element('div', 'mori-summary-grid');
 		var fields = [
-			{ key: 'cpu', section: 'System', title: 'CPU 使用率', en: 'CPU usage (%)', labels: ['CPU usage (%)', 'CPU 使用率（%）', 'CPU 使用率 (%)'] },
-			{ key: 'memory', section: 'Memory', title: '已用内存', en: 'Used', labels: ['Used', '已使用'] },
-			{ key: 'users', section: 'Network', title: '在线用户', en: 'Online Users', labels: ['Online Users', '在线用户数', '在线用户'] },
-			{ key: 'uptime', section: 'System', title: '运行时间', en: 'Uptime', labels: ['Uptime', '运行时间'] }
+			{ key: 'cpu', section: 'System', title: _('CPU Usage'), en: 'CPU usage (%)', labels: ['CPU usage (%)', 'CPU 使用率（%）', 'CPU 使用率 (%)'] },
+			{ key: 'memory', section: 'Memory', title: _('Memory Used'), en: 'Used', labels: ['Used', '已使用'] },
+			{ key: 'users', section: 'Network', title: _('Online Users'), en: 'Online Users', labels: ['Online Users', '在线用户数', '在线用户'] },
+			{ key: 'uptime', section: 'System', title: _('Uptime'), en: 'Uptime', labels: ['Uptime', '运行时间'] }
 		];
 
 		fields.forEach(function (field) {
 			var item = element('div', 'mori-stat');
 			item.dataset.moriStat = field.key;
 			item.appendChild(element('div', 'mori-stat-label', field.title));
-			field.value = element('div', 'mori-stat-value', '读取中…');
-			field.note = element('div', 'mori-stat-note', '来自系统状态');
+			field.value = element('div', 'mori-stat-value', _('Loading…'));
+			field.note = element('div', 'mori-stat-note', _('From system status'));
 			item.appendChild(field.value);
 			item.appendChild(field.note);
 			grid.appendChild(item);
 		});
 		container.insertBefore(grid, view);
 
-		function localized(value) {
-			return typeof window._ === 'function' ? window._(value) : value;
-		}
-
 		var observer;
 		function refresh() {
 			var sections = Array.from(view.children);
 			var sectionMap = {};
 			var systemSection;
-			var memTitle = localized('Memory');
-			var storageTitle = localized('Storage');
-			var sysTitle = localized('System');
+			var memTitle = _('Memory');
+			var storageTitle = _('Storage');
+			var sysTitle = _('System');
+			var noteSystem = _('From system status');
+			var textUnavailable = _('Unavailable');
+			var textNotUpdated = _('Not updated');
+			var noteHidden = _('Source section hidden');
 
 			sections.forEach(function (section) {
 				var h = section.querySelector('h3');
@@ -139,39 +158,39 @@
 			});
 
 			fields.forEach(function (field) {
-				var translated = localized(field.en);
+				var translated = _(field.en);
 				var row = rows.find(function (r) {
 					var label = r.firstElementChild.textContent.trim();
 					return label === translated || field.labels.indexOf(label) >= 0;
 				});
-				var value = '尚未获取';
-				var note = '来自系统状态';
-				var source = sectionMap[localized(field.section)];
+				var value = textUnavailable;
+				var note = noteSystem;
+				var source = sectionMap[_(field.section)];
 
 				if (source && source.querySelector('[data-indicator="poll-status"][data-style="active"]')) {
-					value = '未更新';
-					note = '来源区块已隐藏';
+					value = textNotUpdated;
+					note = noteHidden;
 				} else if (row) {
 					var section = row.closest('.cbi-section');
 					if ((section && (section.hidden || section.style.display === 'none')) || row.offsetParent === null) {
-						value = '未更新';
-						note = '来源区块已隐藏';
+						value = textNotUpdated;
+						note = noteHidden;
 					} else {
 						var cell = row.children[1];
 						var progress = cell.querySelector('.cbi-progressbar');
 						if (progress) {
 							var raw = progress.getAttribute('title') || '';
 							var percent = raw.match(/\(([^)]+)\)/);
-							value = percent ? percent[1] : raw || '尚未获取';
-							note = raw.replace(/\s*\([^)]+\)$/, '') || '来自系统状态';
+							value = percent ? percent[1] : raw || textUnavailable;
+							note = raw.replace(/\s*\([^)]+\)$/, '') || noteSystem;
 						} else {
-							value = cell.textContent.trim() || '尚未获取';
+							value = cell.textContent.trim() || textUnavailable;
 						}
 						if (field.key === 'uptime') {
 							var duration = value.match(/^(\d+)d\s+(\d+)h/);
 							if (duration) {
 								note = value;
-								value = duration[1] + ' 天 ' + duration[2] + ' 小时';
+								value = _('%sd %sh').replace('%s', duration[1]).replace('%s', duration[2]);
 							}
 						}
 					}

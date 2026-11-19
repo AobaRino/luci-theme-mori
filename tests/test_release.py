@@ -16,6 +16,7 @@ spec.loader.exec_module(release)
 COMMIT = '1234567890abcdef1234567890abcdef12345678'
 TAG = 'v1.2.3'
 PACKAGE = 'luci-theme-mori-1.2.3-r2.apk'
+I18N_PACKAGE = 'luci-i18n-mori-zh-cn-1.2.3-r2.apk'
 
 
 def sha(data):
@@ -36,23 +37,29 @@ class ReleaseTests(unittest.TestCase):
         write(self.root / 'VERSION', '1.2.3\n')
         write(self.root / 'Makefile', 'PKG_VERSION:=1.2.3\nPKG_RELEASE:=2\n')
         self.theme = {'www/luci-static/mori/mori.css': b'body { color: green; }\n'}
-        for name in release.SDK_FILES | {PACKAGE}:
+        for name in release.SDK_FILES | {PACKAGE, I18N_PACKAGE}:
             write(self.sdk / name, 'fixture\n')
         write(self.sdk / 'mori-sdk-signing-public.pem', 'public-key-fixture\n')
         write(self.sdk / 'APK-SHA256SUMS', ''.join(
-            f'{sha((self.sdk / name).read_bytes())}  {name}\n' for name in (PACKAGE, 'mori-sdk-signing-public.pem')))
-        self.provenance = dict(package=PACKAGE, source_commit=COMMIT, source_dirty=False,
+            f'{sha((self.sdk / name).read_bytes())}  {name}\n'
+            for name in (PACKAGE, I18N_PACKAGE, 'mori-sdk-signing-public.pem')))
+        self.provenance = dict(package=PACKAGE, i18n_package=I18N_PACKAGE, source_commit=COMMIT, source_dirty=False,
                                architecture='noarch', payload_matches_source=True,
                                public_key_sha256=sha((self.sdk / 'mori-sdk-signing-public.pem').read_bytes()))
         self.save_provenance()
         write(self.sdk / 'package-metadata.yaml', 'info:\n  name: luci-theme-mori\n  version: 1.2.3-r2\n  arch: noarch\n')
-        write(self.sdk / 'signature-verification.txt', f'/tmp/sdk/{PACKAGE}: OK\n')
+        write(self.sdk / 'i18n-zh-cn-metadata.yaml', 'info:\n  name: luci-i18n-mori-zh-cn\n  version: 1.2.3-r2\n  arch: noarch\n')
+        write(self.sdk / 'signature-verification.txt', f'/tmp/sdk/{PACKAGE}: OK\n/tmp/sdk/{I18N_PACKAGE}: OK\n')
         write(self.sdk / 'payload-verification.txt', 'PASS: 2 source files preserved byte-for-byte.\n'
               'PASS: only the SDK package file list is added.\n'
-              'PASS: package identity, noarch architecture, dependencies and hooks checked.\n')
+              'PASS: package identity, noarch architecture, dependencies and hooks checked.\n'
+              'PASS: zh-cn language pack metadata and compiled LMO verified (22 entries).\n')
         write(self.sdk / 'native-smoke-test.txt', '\n'.join(release.SMOKE_PASSES) + '\n')
         payload = dict(self.theme, **{'usr/libexec/mori-register': b'helper', 'lib/apk/packages/luci-theme-mori.list': b'list'})
         write(self.sdk / 'payload-sha256.txt', ''.join(f'{sha(data)}  /{name}\n' for name, data in sorted(payload.items())))
+        i18n_payload = {'usr/lib/lua/luci/i18n/mori.zh-cn.lmo': b'lmo-fixture',
+                        'lib/apk/packages/luci-i18n-mori-zh-cn.list': b'list'}
+        write(self.sdk / 'i18n-zh-cn-payload-sha256.txt', ''.join(f'{sha(data)}  /{name}\n' for name, data in sorted(i18n_payload.items())))
         self.refresh_sdk_sums()
         self.archive = self.root / 'dist/luci-theme-mori-1.2.3.tar.gz'
         self.make_standalone()
@@ -139,10 +146,10 @@ class ReleaseTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'Unsafe standalone archive entry'):
             self.prepare()
 
-    def test_seven_assets_are_complete_and_preserve_tested_bytes(self):
+    def test_eight_assets_are_complete_and_preserve_tested_bytes(self):
         manifest = self.prepare()
         output = self.root / 'dist/release'
-        self.assertEqual(len(manifest['assets']), 7)
+        self.assertEqual(len(manifest['assets']), 8)
         self.assertEqual(manifest['tag'], TAG)
         self.assertEqual(manifest['commit'], COMMIT)
         self.assertEqual({entry['name'] for entry in manifest['assets']}, {path.name for path in output.iterdir()})
@@ -151,6 +158,7 @@ class ReleaseTests(unittest.TestCase):
             self.assertEqual(entry['sha256'], sha(data))
             self.assertEqual(entry['size'], len(data))
         self.assertEqual((output / PACKAGE).read_bytes(), (self.sdk / PACKAGE).read_bytes())
+        self.assertEqual((output / I18N_PACKAGE).read_bytes(), (self.sdk / I18N_PACKAGE).read_bytes())
         self.assertEqual((output / self.archive.name).read_bytes(), self.archive.read_bytes())
         with zipfile.ZipFile(output / 'luci-theme-mori-1.2.3-sdk-verification.zip') as bundle:
             files = release.regular_files(self.sdk)

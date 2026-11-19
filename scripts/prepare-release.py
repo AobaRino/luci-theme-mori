@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Assemble only verified CI outputs into the seven public release assets."""
+"""Assemble only verified CI outputs into the eight public release assets."""
 from __future__ import annotations
 
 import argparse
@@ -18,13 +18,15 @@ SMOKE_PASSES = (
     'PASS: pending LuCI drafts preserved and explicit removal refused',
     'PASS: missing fallback leaves active Mori untouched',
     'PASS: native uninstall, usable fallback, unchanged non-LuCI configuration and pending network edits',
+    'PASS: native zh-cn language pack install, compiled LMO and uninstall',
 )
 SDK_FILES = {
     'APK-SHA256SUMS', 'feeds.buildinfo', 'feeds.conf', 'sdk.config',
     'mori-sdk-signing-public.pem', 'native-smoke-test.txt', 'package-metadata.yaml',
-    'payload-sha256.txt', 'payload-verification.txt', 'provenance.json',
-    'signature-verification.txt', 'hooks/post-install', 'hooks/post-upgrade',
-    'hooks/postinst-pkg', 'hooks/postrm', 'hooks/pre-deinstall', 'hooks/prerm-pkg',
+    'i18n-zh-cn-metadata.yaml', 'payload-sha256.txt', 'i18n-zh-cn-payload-sha256.txt',
+    'payload-verification.txt', 'provenance.json', 'signature-verification.txt',
+    'hooks/post-install', 'hooks/post-upgrade', 'hooks/postinst-pkg',
+    'hooks/postrm', 'hooks/pre-deinstall', 'hooks/prerm-pkg',
 }
 
 
@@ -84,41 +86,52 @@ def release_identity(root: Path, tag: str, commit: str) -> dict:
     require(len(releases) == 1 and bool(re.fullmatch(r'[1-9]\d*', releases[0])),
             'Makefile must have one positive PKG_RELEASE')
     return dict(tag=tag, commit=commit, version=version, package_release=releases[0],
-                package=f'luci-theme-mori-{version}-r{releases[0]}.apk')
+                package=f'luci-theme-mori-{version}-r{releases[0]}.apk',
+                i18n_package=f'luci-i18n-mori-zh-cn-{version}-r{releases[0]}.apk')
 
 
 def check_sdk(sdk: Path, identity: dict) -> tuple[dict[str, Path], dict[str, str]]:
     files = regular_files(sdk)
-    expected = SDK_FILES | {identity['package'], 'SHA256SUMS'}
+    expected = SDK_FILES | {identity['package'], identity['i18n_package'], 'SHA256SUMS'}
     require(set(files) == expected, 'Unexpected or missing SDK artifact files')
     sums = parse_sums(files['SHA256SUMS'].read_text(encoding='ascii'))
     require(set(sums) == expected - {'SHA256SUMS'}, 'SDK checksum manifest must cover every artifact exactly')
     for name, checksum in sums.items():
         require(digest(files[name].read_bytes()) == checksum, f'SDK checksum mismatch: {name}')
     apk_sums = parse_sums(files['APK-SHA256SUMS'].read_text(encoding='ascii'))
-    require(set(apk_sums) == {identity['package'], 'mori-sdk-signing-public.pem'},
-            'APK-SHA256SUMS must contain only the expected APK and public key')
+    require(set(apk_sums) == {identity['package'], identity['i18n_package'], 'mori-sdk-signing-public.pem'},
+            'APK-SHA256SUMS must contain only the expected APKs and public key')
     require(all(sums[name] == checksum for name, checksum in apk_sums.items()), 'APK checksum manifest disagrees with SDK manifest')
     provenance = json.loads(files['provenance.json'].read_text(encoding='utf-8'))
     require(provenance.get('source_commit') == identity['commit'], 'SDK provenance commit differs from release commit')
     require(provenance.get('source_dirty') is False, 'SDK must be built from a clean checkout')
-    require(provenance.get('package') == identity['package'] and provenance.get('architecture') == 'noarch'
+    require(provenance.get('package') == identity['package']
+            and provenance.get('i18n_package') == identity['i18n_package']
+            and provenance.get('architecture') == 'noarch'
             and provenance.get('payload_matches_source') is True, 'SDK provenance package identity or payload audit failed')
     require(provenance.get('public_key_sha256') == sums['mori-sdk-signing-public.pem'], 'Provenance public key differs from the artifact')
     metadata = files['package-metadata.yaml'].read_text(encoding='utf-8')
     for key, value in (('name', 'luci-theme-mori'), ('version', f"{identity['version']}-r{identity['package_release']}"), ('arch', 'noarch')):
         require(bool(re.search(rf'^  {key}: {re.escape(value)}$', metadata, re.M)), f'Unexpected APK metadata: {key}')
-    signature = files['signature-verification.txt'].read_text(encoding='utf-8').strip()
-    require(signature.endswith(identity['package'] + ': OK'), 'Missing successful APK signature verification')
+    i18n_metadata = files['i18n-zh-cn-metadata.yaml'].read_text(encoding='utf-8')
+    for key, value in (('name', 'luci-i18n-mori-zh-cn'), ('version', f"{identity['version']}-r{identity['package_release']}"), ('arch', 'noarch')):
+        require(bool(re.search(rf'^  {key}: {re.escape(value)}$', i18n_metadata, re.M)), f'Unexpected i18n APK metadata: {key}')
+    signature_lines = files['signature-verification.txt'].read_text(encoding='utf-8').splitlines()
+    for pkg in (identity['package'], identity['i18n_package']):
+        require(any(line.strip().endswith(pkg + ': OK') for line in signature_lines),
+                f'Missing successful APK signature verification: {pkg}')
     payload_audit = files['payload-verification.txt'].read_text(encoding='utf-8')
     require(bool(re.search(r'^PASS: [1-9]\d* source files preserved byte-for-byte\.$', payload_audit, re.M))
             and 'PASS: only the SDK package file list is added.' in payload_audit
-            and 'PASS: package identity, noarch architecture, dependencies and hooks checked.' in payload_audit,
+            and 'PASS: package identity, noarch architecture, dependencies and hooks checked.' in payload_audit
+            and bool(re.search(r'^PASS: zh-cn language pack metadata and compiled LMO verified \(\d+ entries\)\.$', payload_audit, re.M)),
             'Missing successful SDK payload audit')
     smoke = files['native-smoke-test.txt'].read_text(encoding='utf-8').splitlines()
     require(all(line in smoke for line in SMOKE_PASSES) and not any(line.startswith('FAIL:') for line in smoke),
             'Missing successful native installation smoke tests')
     payload = parse_sums(files['payload-sha256.txt'].read_text(encoding='ascii'), absolute=True)
+    i18n_payload = parse_sums(files['i18n-zh-cn-payload-sha256.txt'].read_text(encoding='ascii'), absolute=True)
+    require('usr/lib/lua/luci/i18n/mori.zh-cn.lmo' in i18n_payload, 'Missing compiled zh-cn LMO in i18n payload')
     return files, payload
 
 
@@ -159,7 +172,8 @@ def prepare(root: Path, tag: str, commit: str) -> dict:
         require(not directory.is_symlink() and not directory.exists(), f'Release output already exists: {directory}')
     output.mkdir()
     metadata.mkdir()
-    for path in (files[identity['package']], files['mori-sdk-signing-public.pem'], files['APK-SHA256SUMS'], archive, checksums):
+    for path in (files[identity['package']], files[identity['i18n_package']], files['mori-sdk-signing-public.pem'],
+                 files['APK-SHA256SUMS'], archive, checksums):
         shutil.copyfile(path, output / path.name)
     bundle = output / f"luci-theme-mori-{identity['version']}-sdk-verification.zip"
     with zipfile.ZipFile(bundle, 'w', compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zip_file:
@@ -176,9 +190,9 @@ def prepare(root: Path, tag: str, commit: str) -> dict:
     notes = f"""Mori {tag}：适用于 ImmortalWrt 的 LuCI 主题。
 
 基于源码提交 `{commit}`，使用固定的 ImmortalWrt 25.12.0 x86/64 SDK 和 feeds 构建。
-源码检查、独立安装器测试、APK 签名与文件审计、隔离环境安装和卸载测试均已通过；同时验证了生成的升级脚本和配置草稿保护。
+源码检查、独立安装器测试、APK 签名与文件审计、隔离环境安装和卸载测试均已通过；同时验证了生成的升级脚本、配置草稿保护及简体中文语言包。
 
-原生安装请同时下载 `{identity['package']}`、`mori-sdk-signing-public.pem` 和 `APK-SHA256SUMS`，按[安装说明](https://github.com/AobaRino/luci-theme-mori/blob/{tag}/docs/INSTALL.md)校验，并使用临时公钥目录安装。
+原生安装请同时下载 `{identity['package']}`、`{identity['i18n_package']}`（简体中文语言包，按需安装）、`mori-sdk-signing-public.pem` 和 `APK-SHA256SUMS`，按[安装说明](https://github.com/AobaRino/luci-theme-mori/blob/{tag}/docs/INSTALL.md)校验，并使用临时公钥目录安装。
 
 同时提供独立 `.tar.gz` 安装包及校验文件。SDK 验证 ZIP 包含构建来源、软件包元数据、生成脚本、签名校验及原生测试日志。
 

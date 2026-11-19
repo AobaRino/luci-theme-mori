@@ -1,0 +1,90 @@
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8\n"
+
+#: htdocs/luci-static/mori/theme.js
+msgid "%sd %sh"
+msgstr ""
+
+#: ucode/template/themes/mori/header.ut
+msgid "Admin Console"
+msgstr ""
+
+#: htdocs/luci-static/mori/theme.js
+msgid "CPU Usage"
+msgstr ""
+
+#: htdocs/luci-static/mori/theme.js
+msgid "Device status and active connections, clear at a glance."
+msgstr ""
+
+#: htdocs/luci-static/mori/theme.js
+msgid "From system status"
+msgstr ""
+
+#: htdocs/luci-static/mori/theme.js
+msgid "Loading…"
+msgstr ""
+
+#: ucode/template/themes/mori/header.ut
+msgid "Local admin"
+msgstr ""
+
+#: htdocs/luci-static/mori/theme.js
+msgid "Memory Used"
+msgstr ""
+
+#: htdocs/luci-static/mori/theme.js
+msgid "Network Overview"
+msgstr ""
+
+#: htdocs/luci-static/mori/theme.js
+msgid "Not updated"
+msgstr ""
+
+#: htdocs/luci-static/mori/theme.js
+msgid "Online Users"
+msgstr ""
+
+#: ucode/template/themes/mori/header.ut
+msgid "Open navigation menu"
+msgstr ""
+
+#: ucode/template/themes/mori/sysauth.ut
+msgid "Password"
+msgstr ""
+
+#: htdocs/luci-static/mori/theme.js
+msgid "Realtime traffic"
+msgstr ""
+
+#: ucode/template/themes/mori/sysauth.ut
+msgid "Sign in to %s Admin Console"
+msgstr ""
+
+#: htdocs/luci-static/mori/theme.js
+msgid "Source section hidden"
+msgstr ""
+
+#: htdocs/luci-static/mori/theme.js ucode/template/themes/mori/header.ut
+msgid "Switch to dark theme"
+msgstr ""
+
+#: htdocs/luci-static/mori/theme.js ucode/template/themes/mori/header.ut
+msgid "Switch to light theme"
+msgstr ""
+
+#: ucode/template/themes/mori/header.ut
+msgid "Toggle light/dark theme"
+msgstr ""
+
+#: htdocs/luci-static/mori/theme.js
+msgid "Unavailable"
+msgstr ""
+
+#: htdocs/luci-static/mori/theme.js
+msgid "Uptime"
+msgstr ""
+
+#: ucode/template/themes/mori/sysauth.ut
+msgid "Username"
+msgstr ""
