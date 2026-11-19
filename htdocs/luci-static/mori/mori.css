@@ -191,7 +191,7 @@ body.mori-modern .main-right > header .showSide { color: var(--mori-text); }
 body.mori-modern .main-right > header .brand { color: var(--mori-text); font: 500 16px/1.4 var(--mori-font); }
 body.mori-modern .mori-topbar-title { color: var(--mori-muted); font: 13px/1.5 var(--mori-font); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 body.mori-modern .mori-topbar-title > span::before { content: " / "; margin: 0 10px; color: var(--mori-border); }
-body.mori-modern .mori-topbar-actions { display: flex; align-items: center; gap: 9px; margin-left: auto; }
+body.mori-modern .mori-topbar-actions { display: flex; align-items: center; gap: 9px; margin-left: auto; flex-shrink: 0; }
 body.mori-modern .mori-theme-toggle {
   display: inline-flex;
   align-items: center;
@@ -799,6 +799,12 @@ html[data-mori-theme="dark"] [data-page^="admin-services-openclash"] img[src$="e
   body.mori-modern .mori-stat { padding-left: 16px; padding-right: 16px; }
   body.mori-modern .mori-stat-value { font-size: 24px; }
 }
+@media (max-width: 960px) {
+  body.mori-modern .mori-summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 0; }
+  body.mori-modern .mori-stat { padding: 16px 18px; }
+  body.mori-modern .mori-stat:nth-child(2) { border-right: 0; }
+  body.mori-modern .mori-stat:nth-child(-n+2) { border-bottom: 1px solid var(--mori-border); }
+}
 @media (max-width: 850px) {
   body.mori-native.mori-overview #view { grid-template-columns: minmax(0, 1fr); }
   body.mori-modern .mori-stat[data-mori-stat="uptime"] .mori-stat-value { font-size: 20px; }
@@ -818,16 +824,20 @@ html[data-mori-theme="dark"] [data-page^="admin-services-openclash"] img[src$="e
   body.mori-modern .main-right > header .fill .status span { margin: 0 2px; padding: 5px 7px; font-size: 11px; }
   body.mori-modern .main-right > #maincontent > .container { margin: 20px 16px; gap: 16px; }
   body.mori-modern .main-right > footer { padding: 10px 16px 18px; }
-  body.mori-modern .mori-summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 18px; }
-  body.mori-modern .mori-stat:nth-child(2) { border-right: 0; }
   body.mori-modern .mori-page-intro h1,
   body.mori-modern .mori-page-intro h2,
   body.mori-native #maincontent h1 { font-size: 25px; }
   body.mori-native .cbi-value-title { width: 170px; }
+  body.mori-native .cbi-value-field .cbi-dropdown,
+  body.mori-native .cbi-value-field .cbi-input-select,
+  body.mori-native .cbi-value input[type="text"],
+  body.mori-native .cbi-value input[type="password"],
+  body.mori-native .cbi-value textarea { width: auto; min-width: min(220px, 100%); }
   body.mori-native .modal { width: calc(100% - 24px); min-width: 0; padding: 18px; margin-top: 24px; margin-bottom: 24px; }
   body.mori-native .modal.cbi-modal { max-width: calc(100% - 24px); }
 }
 @media (max-width: 600px) {
+  body.mori-modern .mori-topbar-title > span { display: none; }
   body.mori-native .cbi-value { padding: 4px 16px; }
   body.mori-native .cbi-value-title { float: none; width: 100%; padding: 4px 0 7px; }
   body.mori-native .cbi-value-field .cbi-dropdown,
