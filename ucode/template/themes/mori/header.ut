@@ -70,7 +70,7 @@
 	<link rel="icon" type="image/svg+xml" href="{{ media }}/icon.svg?v=65d7ffbb254b">
 	<link rel="manifest" href="{{ media }}/manifest.webmanifest?v=4ee6b4d19653" crossorigin="use-credentials">
 
-	<link rel="stylesheet" href="{{ media }}/css/cascade.css?v=b23ef11791d7">
+	<link rel="stylesheet" href="{{ media }}/css/cascade.css?v=28e9bb82a07c">
 	<link rel="stylesheet" href="{{ media }}/mori.css?v=38c1c9d59b54">
 	<script src="{{ media }}/theme.js?v=198c3bd13936"></script>
 	{% if (node?.css): %}
