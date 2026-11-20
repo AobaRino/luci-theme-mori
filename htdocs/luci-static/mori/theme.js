@@ -121,7 +121,9 @@
 		fields.forEach(function (field) {
 			var item = element('div', 'mori-stat');
 			item.dataset.moriStat = field.key;
+			item.dataset.moriState = 'loading';
 			item.appendChild(element('div', 'mori-stat-label', field.title));
+			field.item = item;
 			field.value = element('div', 'mori-stat-value', _('Loading…'));
 			field.note = element('div', 'mori-stat-note', _('From system status'));
 			item.appendChild(field.value);
@@ -139,6 +141,7 @@
 			var storageTitle = _('Storage');
 			var sysTitle = _('System');
 			var noteSystem = _('From system status');
+			var textLoading = _('Loading…');
 			var textUnavailable = _('Unavailable');
 			var textNotUpdated = _('Not updated');
 			var noteHidden = _('Source section hidden');
@@ -153,6 +156,9 @@
 				if (section.dataset.moriSection !== kind) section.dataset.moriSection = kind;
 			});
 
+			var hasSections = Object.keys(sectionMap).length > 0;
+			var viewLoading = !hasSections && (Boolean(view.querySelector('.spinning')) || sections.length === 0);
+
 			var rows = Array.from(view.querySelectorAll('tr, .tr')).filter(function (row) {
 				return row.children.length >= 2;
 			});
@@ -163,30 +169,50 @@
 					var label = r.firstElementChild.textContent.trim();
 					return label === translated || field.labels.indexOf(label) >= 0;
 				});
-				var value = textUnavailable;
+				var value = viewLoading ? textLoading : textUnavailable;
 				var note = noteSystem;
+				var state = viewLoading ? 'loading' : 'empty';
 				var source = sectionMap[_(field.section)];
 
-				if (source && source.querySelector('[data-indicator="poll-status"][data-style="active"]')) {
+				if (!viewLoading && source && source.querySelector('[data-indicator="poll-status"][data-style="active"]')) {
 					value = textNotUpdated;
 					note = noteHidden;
+					state = 'empty';
 				} else if (row) {
 					var section = row.closest('.cbi-section');
 					if ((section && (section.hidden || section.style.display === 'none')) || row.offsetParent === null) {
 						value = textNotUpdated;
 						note = noteHidden;
+						state = 'empty';
 					} else {
 						var cell = row.children[1];
 						var progress = cell.querySelector('.cbi-progressbar');
 						if (progress) {
 							var raw = progress.getAttribute('title') || '';
 							var percent = raw.match(/\(([^)]+)\)/);
-							value = percent ? percent[1] : raw || textUnavailable;
-							note = raw.replace(/\s*\([^)]+\)$/, '') || noteSystem;
+							var metric = percent ? percent[1] : raw;
+							if (metric) {
+								value = metric;
+								note = raw.replace(/\s*\([^)]+\)$/, '') || noteSystem;
+								state = '';
+							} else {
+								value = textUnavailable;
+								state = 'empty';
+							}
+						} else if (cell.classList.contains('spinning') || cell.querySelector('.spinning')) {
+							value = textLoading;
+							state = 'loading';
 						} else {
-							value = cell.textContent.trim() || textUnavailable;
+							var text = cell.textContent.trim();
+							if (text) {
+								value = text;
+								state = '';
+							} else {
+								value = textUnavailable;
+								state = 'empty';
+							}
 						}
-						if (field.key === 'uptime') {
+						if (!state && field.key === 'uptime') {
 							var duration = value.match(/^(\d+)d\s+(\d+)h/);
 							if (duration) {
 								note = value;
@@ -194,9 +220,17 @@
 							}
 						}
 					}
+				} else if (!viewLoading && source && source.querySelector('.spinning')) {
+					value = textLoading;
+					state = 'loading';
 				}
 				if (field.value.textContent !== value) field.value.textContent = value;
 				if (field.note.textContent !== note) field.note.textContent = note;
+				if (state) {
+					if (field.item.dataset.moriState !== state) field.item.dataset.moriState = state;
+				} else if ('moriState' in field.item.dataset) {
+					delete field.item.dataset.moriState;
+				}
 			});
 
 			// Move the existing node, retaining LuCI's polling references and controls.
@@ -219,7 +253,7 @@
 			subtree: true,
 			characterData: true,
 			attributes: true,
-			attributeFilter: ['style', 'title', 'data-style']
+			attributeFilter: ['class', 'hidden', 'style', 'title', 'data-style']
 		});
 		refresh();
 	});

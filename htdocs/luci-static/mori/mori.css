@@ -247,7 +247,8 @@ body.mori-modern .mori-stat-value { display: block; margin: 8px 0 2px; color: va
 body.mori-modern .mori-stat-value small { color: var(--mori-muted); font-size: 12px; font-weight: 400; letter-spacing: 0; }
 body.mori-modern .mori-stat > small,
 body.mori-modern .mori-stat-note { display: block; margin-top: 7px; color: var(--mori-muted); font-size: 12px; line-height: 1.5; overflow-wrap: anywhere; }
-body.mori-modern .mori-stat[data-mori-stat="uptime"] .mori-stat-value { font-size: 22px; line-height: 1.5; }
+body.mori-modern .mori-stat[data-mori-stat="uptime"]:not([data-mori-state]) .mori-stat-value { font-size: 22px; line-height: 1.5; }
+body.mori-modern .mori-stat[data-mori-state] .mori-stat-value { color: var(--mori-muted); font-size: 18px; font-weight: 500; line-height: 1.8; letter-spacing: 0; }
 
 /* Native LuCI pages only. No selectors in this section apply to plugins. */
 body.mori-native {
@@ -806,7 +807,7 @@ html[data-mori-theme="dark"] [data-page^="admin-services-openclash"] img[src$="e
 }
 @media (max-width: 850px) {
   body.mori-native.mori-overview #view { grid-template-columns: minmax(0, 1fr); }
-  body.mori-modern .mori-stat[data-mori-stat="uptime"] .mori-stat-value { font-size: 20px; }
+  body.mori-modern .mori-stat[data-mori-stat="uptime"]:not([data-mori-state]) .mori-stat-value { font-size: 20px; }
 }
 @media (max-width: 768px) {
   body.mori-modern .main > .main-left { position: fixed; top: 0; bottom: 0; left: 0; width: 0; height: 100%; z-index: 100; border-right-width: 0; }

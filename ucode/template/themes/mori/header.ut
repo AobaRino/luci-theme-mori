@@ -72,8 +72,8 @@
 	<link rel="manifest" href="{{ media }}/manifest.webmanifest?v=17f328301f05" crossorigin="use-credentials">
 
 	<link rel="stylesheet" href="{{ media }}/css/cascade.css?v=7bc44a4cf5d5">
-	<link rel="stylesheet" href="{{ media }}/mori.css?v=c8e45f8a2932">
-	<script src="{{ media }}/theme.js?v=39c4eeb582fa"></script>
+	<link rel="stylesheet" href="{{ media }}/mori.css?v=293d034b33d1">
+	<script src="{{ media }}/theme.js?v=27ccaa2bea8f"></script>
 	{% if (node?.css): %}
 	<link rel="stylesheet" href="{{ resource }}/{{ node.css }}">
 	{% endif -%}
