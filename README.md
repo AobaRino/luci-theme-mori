@@ -49,7 +49,7 @@ python3 scripts/build.py
 python3 scripts/check.py
 ```
 
-将生成的 `dist/luci-theme-mori-0.1.1.tar.gz` 上传到路由器并解压，然后在解压目录执行：
+将生成的 `dist/luci-theme-mori-0.1.2.tar.gz` 上传到路由器并解压，然后在解压目录执行：
 
 ```sh
 sh scripts/install.sh --activate

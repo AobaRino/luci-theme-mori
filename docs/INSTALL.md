@@ -16,21 +16,21 @@ Mori 提供原生 `.apk` 和独立 `.tar.gz` 两种安装方式。通过包管�
 
 ### 下载与校验
 
-从同一个 [Release](https://github.com/AobaRino/luci-theme-mori/releases) 下载以下文件，保持文件名不变。以 v0.1.1 为例：
+从同一个 [Release](https://github.com/AobaRino/luci-theme-mori/releases) 下载以下文件，保持文件名不变。以 v0.1.2 为例：
 
 ```text
-luci-theme-mori-0.1.1-r1.apk
-luci-i18n-mori-zh-cn-0.1.1-r1.apk
+luci-theme-mori-0.1.2-r1.apk
+luci-i18n-mori-zh-cn-0.1.2-r1.apk
 mori-sdk-signing-public.pem
 APK-SHA256SUMS
 ```
 
-`luci-i18n-mori-zh-cn-0.1.1-r1.apk` 为简体中文语言包（遵循 LuCI 标准 `luci-i18n-*` 形式），需要中文界面时一并安装。`APK-SHA256SUMS` 只校验上述 APK 和公钥。完整构建记录另外包含 SDK、feeds、源码提交、成品元数据、文件及脚本检查记录，适合需要核对构建来源时查看。
+`luci-i18n-mori-zh-cn-0.1.2-r1.apk` 为简体中文语言包（遵循 LuCI 标准 `luci-i18n-*` 形式），需要中文界面时一并安装。`APK-SHA256SUMS` 只校验上述 APK 和公钥。完整构建记录另外包含 SDK、feeds、源码提交、成品元数据、文件及脚本检查记录，适合需要核对构建来源时查看。
 
 将文件上传到路由器 `/tmp/`。示例中的 `router.lan` 换成自己的路由器地址，密码由 SSH / SCP 交互输入：
 
 ```sh
-scp -O luci-theme-mori-0.1.1-r1.apk luci-i18n-mori-zh-cn-0.1.1-r1.apk mori-sdk-signing-public.pem APK-SHA256SUMS root@router.lan:/tmp/
+scp -O luci-theme-mori-0.1.2-r1.apk luci-i18n-mori-zh-cn-0.1.2-r1.apk mori-sdk-signing-public.pem APK-SHA256SUMS root@router.lan:/tmp/
 ssh root@router.lan
 ```
 
@@ -41,8 +41,8 @@ cd /tmp
 sha256sum -c APK-SHA256SUMS
 MORI_KEYS="$(mktemp -d /tmp/mori-keys.XXXXXX)"
 cp mori-sdk-signing-public.pem "$MORI_KEYS/"
-apk --keys-dir "$MORI_KEYS" --no-network --repositories-file /dev/null verify /tmp/luci-theme-mori-0.1.1-r1.apk /tmp/luci-i18n-mori-zh-cn-0.1.1-r1.apk
-apk --keys-dir "$MORI_KEYS" --no-network --repositories-file /dev/null add --no-commit-hooks /tmp/luci-theme-mori-0.1.1-r1.apk /tmp/luci-i18n-mori-zh-cn-0.1.1-r1.apk
+apk --keys-dir "$MORI_KEYS" --no-network --repositories-file /dev/null verify /tmp/luci-theme-mori-0.1.2-r1.apk /tmp/luci-i18n-mori-zh-cn-0.1.2-r1.apk
+apk --keys-dir "$MORI_KEYS" --no-network --repositories-file /dev/null add --no-commit-hooks /tmp/luci-theme-mori-0.1.2-r1.apk /tmp/luci-i18n-mori-zh-cn-0.1.2-r1.apk
 ```
 
 每一步都应成功后再继续。公钥只用于上述命令的临时目录，不写入系统的 `/etc/apk/keys`；`--no-network` 和空软件源列表使这次操作只安装已上传的本地包。不要省略校验，或用 `--force-overwrite` 绕过文件冲突。若缺少依赖，先使用固件原有的可信软件源补齐提示的依赖，再重新安装 Mori。
@@ -95,8 +95,8 @@ Windows 可使用 `py -3` 替代 `python3`。构建不依赖路由器上的原 A
 生成：
 
 ```text
-dist/luci-theme-mori-0.1.1.tar.gz
-dist/luci-theme-mori-0.1.1.tar.gz.sha256
+dist/luci-theme-mori-0.1.2.tar.gz
+dist/luci-theme-mori-0.1.2.tar.gz.sha256
 ```
 
 从源码构建时，以当前 `VERSION` 和实际产物名称为准。若从仓库 Release 获取安装包，应同时获取对应的校验文件；没有附件时使用上述本地构建流程。
@@ -106,7 +106,7 @@ dist/luci-theme-mori-0.1.1.tar.gz.sha256
 将示例中的 `router.lan` 换成自己的路由器地址。密码由 SSH / SCP 交互输入，不应写入脚本或仓库。
 
 ```sh
-scp -O dist/luci-theme-mori-0.1.1.tar.gz dist/luci-theme-mori-0.1.1.tar.gz.sha256 root@router.lan:/tmp/
+scp -O dist/luci-theme-mori-0.1.2.tar.gz dist/luci-theme-mori-0.1.2.tar.gz.sha256 root@router.lan:/tmp/
 ssh root@router.lan
 ```
 
@@ -116,9 +116,9 @@ ssh root@router.lan
 
 ```sh
 cd /tmp
-sha256sum -c luci-theme-mori-0.1.1.tar.gz.sha256
-tar -xzf luci-theme-mori-0.1.1.tar.gz
-cd luci-theme-mori-0.1.1
+sha256sum -c luci-theme-mori-0.1.2.tar.gz.sha256
+tar -xzf luci-theme-mori-0.1.2.tar.gz
+cd luci-theme-mori-0.1.2
 ```
 
 ### 3. 安装并启用

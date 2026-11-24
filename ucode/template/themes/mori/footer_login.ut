@@ -20,7 +20,7 @@
 <footer>
 	<div>
 		<a class="luci-link" href="https://github.com/openwrt/luci" target="_blank" rel="noopener noreferrer">Powered by {{ version.luciname }} ({{ version.luciversion }})</a>
-		<a href="https://github.com/AobaRino/luci-theme-mori" target="_blank" rel="noopener noreferrer">Mori 0.1.1 · based on Argon</a>
+		<a href="https://github.com/AobaRino/luci-theme-mori" target="_blank" rel="noopener noreferrer">Mori 0.1.2 · based on Argon</a>
 		<a class="luci-link" href="{{ version.disturl }}" target="_blank" rel="noopener noreferrer">{{ version.distname }} {{ version.distversion }}-{{ version.distrevision }}</a>
 	</div>
 </footer>

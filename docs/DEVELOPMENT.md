@@ -35,7 +35,7 @@ Windows 可使用 `py -3` 替代 `python3`。构建脚本从本仓库源码生�
 生成的安装目录包含：
 
 ```text
-luci-theme-mori-0.1.1/
+luci-theme-mori-0.1.2/
 ├── rootfs/                  # 准备复制到路由器的资源与模板
 ├── scripts/install.sh
 ├── scripts/rollback.sh
@@ -87,7 +87,7 @@ sudo sh scripts/test-native.sh
 
 输出包括：
 
-- `luci-theme-mori-0.1.1-r1.apk`、`luci-i18n-mori-zh-cn-0.1.1-r1.apk` 与 `mori-sdk-signing-public.pem`。
+- `luci-theme-mori-0.1.2-r1.apk`、`luci-i18n-mori-zh-cn-0.1.2-r1.apk` 与 `mori-sdk-signing-public.pem`。
 - `APK-SHA256SUMS`：仅用于用户安装时校验上述 APK 和公钥。
 - `SHA256SUMS`：整个 SDK 产物目录的完整校验清单。
 - `provenance.json`、`feeds.buildinfo`、`feeds.conf` 和 `sdk.config`：固定输入及构建来源。
@@ -124,19 +124,19 @@ APK 的卸载前脚本错误不能被当作可靠的阻止机制。支持的用�
 
 ## 发布
 
-[Release Mori 工作流](../.github/workflows/release.yml) 在推送 `vX.Y.Z` tag 后自动构建、测试并发布。它要求 tag 去掉 `v` 后与 `VERSION`、`Makefile` 中的 `PKG_VERSION` 完全一致，`PKG_RELEASE` 为正整数。当前自动发布只接受正式版本，例如 `v0.1.1`；不匹配的 tag 会在下载 SDK 前失败。
+[Release Mori 工作流](../.github/workflows/release.yml) 在推送 `vX.Y.Z` tag 后自动构建、测试并发布。它要求 tag 去掉 `v` 后与 `VERSION`、`Makefile` 中的 `PKG_VERSION` 完全一致，`PKG_RELEASE` 为正整数。当前自动发布只接受正式版本，例如 `v0.1.2`；不匹配的 tag 会在下载 SDK 前失败。
 
 发布新版本时：
 
 1. 更新 `VERSION`、`Makefile` 的 `PKG_VERSION`、包修订号及必要的文档示例。
 2. 运行 `python3 scripts/build.py` 和 `python3 scripts/check.py`，提交更新后的模板资源指纹及版本文件。
 3. 确认提交中不包含凭据、设备配置或私有截图。涉及界面及固件兼容性的改动，应补充目标设备上的实际验证。
-4. 先将版本提交推送到默认分支 `main`，再为该提交打 tag 并推送。以下以源码已更新到 `0.1.1` 为例：
+4. 先将版本提交推送到默认分支 `main`，再为该提交打 tag 并推送。以下以源码已更新到 `0.1.2` 为例：
 
 ```sh
 git push origin main
-git tag -a v0.1.1 -m "Mori v0.1.1"
-git push origin v0.1.1
+git tag -a v0.1.2 -m "Mori v0.1.2"
+git push origin v0.1.2
 ```
 
 在 [Actions](https://github.com/AobaRino/luci-theme-mori/actions/workflows/release.yml) 查看 **Release Mori**。流程依次执行：
